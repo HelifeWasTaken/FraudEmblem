@@ -91,8 +91,9 @@ namespace kat {
             m_kat["ContextAttribute::Debug"] = ContextAttribute::Debug;
 
             m_kat.new_usertype<VideoMode>("VideoMode",
-                sol::constructors<VideoMode(), VideoMode(const Vector2<u32>&, u32)>(),
-                "size", &VideoMode::size,
+                sol::constructors<VideoMode(), VideoMode(u32, u32, u32)>(),
+                "width", &VideoMode::width,
+                "height", &VideoMode::height,
                 "bitsPerPixel", &VideoMode::bitsPerPixel
             );
 
@@ -172,11 +173,6 @@ namespace kat {
                 "a", &Color::a
             );
 
-            m_kat.new_usertype<Angle>("Angle",
-                "asDegrees", &Angle::asDegrees,
-                "asRadians", &Angle::asRadians
-            );
-
             m_kat.new_usertype<Transform>("Transform",
                 sol::constructors<
                     Transform(),
@@ -210,19 +206,19 @@ namespace kat {
 
                 "rotate",
                 [](Transform& self, f32 angle)
-                { return self.rotate(sf::degrees(angle)); },
+                { return self.rotate(angle); },
 
                 "rotateRad",
                 [](Transform& self, f32 angle)
-                { return self.rotate(sf::radians(angle)); },
+                { return self.rotate(kat::math::asDegrees(angle)); },
 
                 "rotateAround",
                 [](Transform& self, f32 angle, const Position& center)
-                { return self.rotate(sf::degrees(angle), center); },
+                { return self.rotate(angle, center); },
 
                 "rotateAroundRad",
                 [](Transform& self, f32 angle, const Position& center)
-                { return self.rotate(sf::radians(angle), center); },
+                { return self.rotate(kat::math::asDegrees(angle), center); },
 
                 "scale",
                 [](Transform& self, const Scale& factors)
@@ -248,11 +244,11 @@ namespace kat {
                 },
                 "setRotation",
                 [](Sprite& self, f32 angle) {
-                    return self.setRotation(sf::degrees(angle));
+                    return self.setRotation(angle);
                 },
                 "setRotationRad",
                 [](Sprite& self, f32 angle) {
-                    return self.setRotation(sf::radians(angle));
+                    return self.setRotation(kat::math::asDegrees(angle));
                 },
                 "setScale",
                 [](Sprite& self, const Scale& scale) {
@@ -268,11 +264,11 @@ namespace kat {
                 },
                 "getRotation",
                 [](Sprite& self) {
-                    return self.getRotation().asDegrees();
+                    return self.getRotation();
                 },
                 "getRotationRad",
                 [](Sprite& self) {
-                    return self.getRotation().asRadians();
+                    return kat::math::asRadians(self.getRotation());
                 },
                 "getScale",
                 [](Sprite& self) {
@@ -288,11 +284,11 @@ namespace kat {
                 },
                 "rotate",
                 [](Sprite& self, f32 angle) {
-                    return self.rotate(sf::degrees(angle));
+                    return self.rotate(angle);
                 },
                 "rotateRad",
                 [](Sprite& self, f32 angle) {
-                    return self.rotate(sf::radians(angle));
+                    return self.rotate(kat::math::asDegrees(angle));
                 },
                 "scale",
                 [](Sprite& self, const Scale& factors) {

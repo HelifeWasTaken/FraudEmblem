@@ -41,7 +41,7 @@ namespace kat {
     Texture& Texture::create(const TextureSize& size)
     {
         m_texture = std::make_shared<sf::Texture>();
-        if (m_texture->create({size.x, size.y}) == false) {
+        if (m_texture->create(size.x, size.y) == false) {
             m_texture = nullptr;
         }
         return *this;
@@ -60,8 +60,8 @@ namespace kat {
 
     Texture& Texture::update(const Pixels pixels, const Frame& frame)
     {
-        m_texture->update(pixels, {(u32)frame.width, (u32)frame.height},    
-                                  {(u32)frame.left, (u32)frame.top});
+        m_texture->update(pixels, (u32)frame.width, (u32)frame.height,
+                                  (u32)frame.left, (u32)frame.top);
         return *this;
     }
 
@@ -73,7 +73,7 @@ namespace kat {
 
     Texture& Texture::update(const sf::Texture *sfml_texture, const TextureCoordinate& x, const TextureCoordinate& y)
     {
-        m_texture->update(*sfml_texture, {x, y});
+        m_texture->update(*sfml_texture, x, y);
         return *this;
     }
 
@@ -85,7 +85,7 @@ namespace kat {
 
     Texture& Texture::update(const Texture& texture, const TextureCoordinate& x, const TextureCoordinate& y)
     {
-        m_texture->update(*texture.m_texture, {x, y});
+        m_texture->update(*texture.m_texture, x, y);
         return *this;
     }
 
@@ -97,7 +97,7 @@ namespace kat {
 
     Texture& Texture::update(const sf::Window& sfml_window, const TextureCoordinate& x, const TextureCoordinate& y)
     {
-        m_texture->update(sfml_window, {x, y});
+        m_texture->update(sfml_window, x, y);
         return *this;
     }
 

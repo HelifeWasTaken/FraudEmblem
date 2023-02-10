@@ -15,7 +15,7 @@ namespace kat {
     /**
      * @brief An angle
      */
-    using Angle = sf::Angle;
+    using Angle = float;
 
     /**
      * @brief A scale factor.

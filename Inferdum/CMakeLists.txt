@@ -26,6 +26,7 @@ FetchContent_MakeAvailable(lua)
 FetchContent_Declare(
 	sfml
 	GIT_REPOSITORY "https://github.com/SFML/SFML"
+    GIT_TAG 2.5.x
 )
 
 FetchContent_MakeAvailable(sfml)
@@ -52,14 +53,14 @@ target_include_directories(${PROJECT_NAME} PUBLIC ${PROJECT_SOURCE_DIR})
 
 #add_executable(${PROJECT_NAME}_test App/App.cpp)
 
-target_link_libraries(
-        ${PROJECT_NAME}_test
-        sfml-graphics sfml-window sfml-system
-        lua::lua ${PROJECT_NAME}
-)
+# target_link_libraries(
+#         ${PROJECT_NAME}_test
+#         sfml-graphics sfml-window sfml-system
+#         lua::lua ${PROJECT_NAME}
+# )
 
 if (UNIX)
-    target_link_libraries(${PROJECT_NAME}_test pthread GL dl)
+    target_link_libraries(${PROJECT_NAME} pthread GL dl)
 else()
-    target_link_libraries(${PROJECT_NAME}_test opengl32)
+    target_link_libraries(${PROJECT_NAME} opengl32)
 endif()
