@@ -1,0 +1,1 @@
+#include "Kat/resource.h"
