@@ -160,4 +160,53 @@ public:
 
         return result;
     }
+
+    std::vector<Point> findShortestPathTo(int fromX, int fromY, int toX, int toY, int maxStep)
+    {
+        std::vector<Point> result;
+        if ((fromX == toX && fromY == toY) || maxStep == 0)
+        {
+            return result;
+        }
+
+        std::vector<Point> aviablePaths = getAviablePaths(fromX, fromY, 1);
+        for (auto path : aviablePaths)
+        {
+            if (path.x == toX && path.y == toY)
+            {
+                result.push_back(path);
+                return result;
+            }
+        }
+
+        std::vector<std::vector<Point>> paths;
+        for (auto path : aviablePaths)
+        {
+            auto subResult = findShortestPathTo(path.x, path.y, toX, toY, maxStep - 1);
+            if (subResult.size() > 0)
+            {
+                subResult.push_back(path);
+                paths.push_back(subResult);
+            }
+        }
+
+        if (paths.size() == 0)
+        {
+            return result;
+        }
+
+        int minPathLength = paths[0].size();
+        int minPathIndex = 0;
+        for (int i = 1; i < paths.size(); i++)
+        {
+            if (paths[i].size() < minPathLength)
+            {
+                minPathLength = paths[i].size();
+                minPathIndex = i;
+            }
+        }
+
+        result = paths[minPathIndex];
+        return result;
+    }
 };
