@@ -7,16 +7,17 @@
 
 #pragma once
 
-#include <memory>
 #include "entt/entt.hpp"
+#include "window.h"
 
 namespace emblem {
     class Context {
         entt::registry __registry;
+        kat::Window __window;
 
         static Context *__instance;
 
-        Context() = default;
+        Context();
 
         public:
             ~Context() = default;
@@ -24,6 +25,7 @@ namespace emblem {
             static Context &instance();
 
             static entt::registry &entt();
+            static kat::Window &window();
 
     };
 }

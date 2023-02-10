@@ -1,0 +1,22 @@
+{
+    "texture": "test.png",
+    "stats": {
+        "hp": 250,
+        "atk": 10,
+        "def": 5,
+        "lck": 0,
+        "mov": 7
+    },
+    "animations": [
+        {
+            "name": "IDLE",
+            "size": {
+                "width": 42,
+                "height": 42
+            },
+            "speed": 0.1,
+            "loop": true,
+            "frames": [0, 1]
+        }
+    ]
+}

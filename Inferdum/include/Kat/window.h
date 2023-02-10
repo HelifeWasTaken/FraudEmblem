@@ -149,6 +149,9 @@ namespace kat {
          */
         WindowSize size() const;
 
+        Window &clear();
+        Window &display();
+
         /**
          * @brief Gets the handle of the window.
          * 

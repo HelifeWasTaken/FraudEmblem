@@ -10,7 +10,14 @@ file(
     GLOB SRC
 
     src/*.cpp
+    src/component/*.cpp
     main.cpp
+
+    include/*.hpp
+    include/component/*.hpp
+
+    Inferdum/include/Kat/*.h
+    Inferdum/include/Kat/entt/entt.hpp
 )
 
 add_executable(${PROJECT_NAME} ${SRC})
@@ -18,4 +25,7 @@ add_executable(${PROJECT_NAME} ${SRC})
 target_link_libraries(${PROJECT_NAME} PUBLIC kat)
 
 target_include_directories(${PROJECT_NAME} PUBLIC include)
+target_include_directories(${PROJECT_NAME} PUBLIC ${SFML_SOURCE_DIR}/include)
 target_include_directories(${PROJECT_NAME} PUBLIC Inferdum/include/Kat)
+
+target_link_libraries(${PROJECT_NAME} PUBLIC sfml-graphics sfml-window sfml-system)

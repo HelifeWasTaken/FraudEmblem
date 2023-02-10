@@ -8,16 +8,38 @@
 #pragma once
 
 #include <string>
+#include <unordered_map>
+#include <filesystem>
+#include <fstream>
 
-#include "Kat/components/animator.h"
-#include "Kat/components/sprite.h"
-#include "Kat/components/texture.h"
+#include "components/animator.h"
+#include "components/sprite.h"
+#include "components/texture.h"
 
 #include "entt/entt.hpp"
 #include "nlohmann/json.hpp"
 #include "Context.hpp"
+#include "component/Stats.hpp"
 
 namespace emblem {
 
-    entt::entity createCharacter(const std::string &filename, const nlohmann::json &json);
+    entt::entity createCharacter(const nlohmann::json &json);
+
+    class CharacterFactory {
+        std::unordered_map<std::string, nlohmann::json> __characters;
+
+        static CharacterFactory *__instance;
+
+        CharacterFactory() = default;
+
+        static CharacterFactory &instance();
+
+        public:
+            ~CharacterFactory() = default;
+
+
+            static void loadCharacters(const std::string &path);
+            static void registerCharacter(const std::string &name, const nlohmann::json &json);
+            static entt::entity createCharacter(const std::string &name);
+    };
 }

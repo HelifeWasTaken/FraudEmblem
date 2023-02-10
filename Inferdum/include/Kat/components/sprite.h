@@ -1,6 +1,6 @@
 #pragma once
 
-#include <SFML/Graphics/Sprite.hpp>
+#include <SFML/Graphics.hpp>
 
 #include "./texture.h"
 #include "../batch.h"

@@ -57,6 +57,17 @@ namespace kat {
         return m_window.getSize();
     }
 
+    Window &Window::clear() {
+        m_window.clear();
+        return *this;
+    }
+
+    Window &Window::display() {
+        m_window.display();
+        return *this;
+    }
+
+
     sf::RenderWindow& Window::get_handle()
     {
         return m_window;
