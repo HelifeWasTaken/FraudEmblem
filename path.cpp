@@ -164,7 +164,11 @@ public:
     std::vector<Point> findShortestPathTo(int fromX, int fromY, int toX, int toY, int maxStep)
     {
         std::vector<Point> result;
-        if ((fromX == toX && fromY == toY) || maxStep == 0)
+        if (fromX == toX && fromY == toY)
+        {
+            return result;
+        }
+        if (maxStep == 0)
         {
             return result;
         }
@@ -197,12 +201,16 @@ public:
 
         int minPathLength = paths[0].size();
         int minPathIndex = 0;
+        int minDistance = INT_MAX;
         for (int i = 1; i < paths.size(); i++)
         {
-            if (paths[i].size() < minPathLength)
+            int distance = abs(paths[i][0].x - toX) + abs(paths[i][0].y - toY);
+            if (paths[i].size() < minPathLength ||
+                (paths[i].size() == minPathLength && distance < minDistance))
             {
                 minPathLength = paths[i].size();
                 minPathIndex = i;
+                minDistance = distance;
             }
         }
 
