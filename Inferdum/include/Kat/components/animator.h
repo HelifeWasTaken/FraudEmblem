@@ -164,7 +164,7 @@ namespace kat {
          * @param loop Whether the animation should loop.
          * @return A reference to the Animator object.
          */
-        Animator& play(const AnimationName& name, AnimationLoop loop = AnimationLoop::Default);
+        Animator& play(const AnimationName& name, const AnimationLoop &loop = AnimationLoop::Default);
 
        /**
         * @brief Stop the current animation.

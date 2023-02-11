@@ -19,11 +19,11 @@ namespace emblem {
         size_t y;
     };
 
-    size_t MASK_CELL_TYPE = 0x0f;
-    size_t EXCLUDE_MASK_CELL_TYPE = ~MASK_CELL_TYPE;
+    static const size_t MASK_CELL_TYPE = 0x0f;
+    static const size_t EXCLUDE_MASK_CELL_TYPE = ~MASK_CELL_TYPE;
 
-    size_t MASK_CELL_ENTITY_TYPE = 0xf0;
-    size_t EXCLUDE_MASK_CELL_ENTITY_TYPE = ~MASK_CELL_ENTITY_TYPE;
+    static const size_t MASK_CELL_ENTITY_TYPE = 0xf0;
+    static const size_t EXCLUDE_MASK_CELL_ENTITY_TYPE = ~MASK_CELL_ENTITY_TYPE;
 
     enum CellType {
         EMPTY,

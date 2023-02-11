@@ -67,12 +67,16 @@ namespace kat {
         return *this;
     }
 
-    Animator& Animator::play(const AnimationName& name, AnimationLoop loop) {
+    Animator& Animator::play(const AnimationName& name, const AnimationLoop &loop) {
         if (m_current_animation == &m_animations[name]) {
+            bool cLoop;
             if (loop == AnimationLoop::Default) {
-                loop = m_animations[name].loop;
+                cLoop = m_animations[name].loop;
+                // loop = m_animations[name].loop;
+            } else {
+                cLoop = loop == AnimationLoop::Loop;
             }
-            if (m_loop != loop) {
+            if (m_loop != cLoop) {
                 return playAnimation(name, loop);
             }
             return *this;

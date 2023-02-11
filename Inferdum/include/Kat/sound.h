@@ -1,7 +1,10 @@
 #pragma once
 
 #include <SFML/Audio/Sound.hpp>
+#include <SFML/Audio/SoundBuffer.hpp>
+#include <SFML/Audio/Music.hpp>
 #include <unordered_map>
+#include <string>
 
 namespace kat {
 
