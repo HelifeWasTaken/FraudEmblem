@@ -6,6 +6,7 @@
 #include <functional>
 #include <cctype>
 #include <algorithm>
+#include <string>
 
 namespace hl
 {

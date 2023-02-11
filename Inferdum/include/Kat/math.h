@@ -1,5 +1,14 @@
 #pragma once
 
+#ifdef _MSC_VER
+#ifndef _USE_MATH_DEFINES
+#define _USE_MATH_DEFINES
+#endif
+#ifndef _CRT_FUNCTIONS_REQUIRED
+#define _CRT_FUNCTIONS_REQUIRED 0
+#endif
+#endif
+
 #include <cmath>
 
 namespace kat {
@@ -28,7 +37,7 @@ namespace kat {
         static inline constexpr double EULER_NUMBER = 2.71828182845904523536;
 
         static inline constexpr double LOG_E  = 1.0;
-        static inline constexpr double LOG_0  = -INFINITY;
+        //static inline constexpr double LOG_0  = -INFINITY;
         static inline constexpr double LOG_1  = 0.0;
         static inline constexpr double LOG_2  = 0.693147180559945309417;
         static inline constexpr double LOG_3  = 1.09861228866810969139;
@@ -82,6 +91,7 @@ namespace kat {
             return radians * DEGREE;
         }
 
+#ifndef _MSC_VER
         static inline double sin(const double& v)
         {
             return std::sin(v);
@@ -468,5 +478,6 @@ namespace kat {
                 ? 8.0 * pow(2.0, 8.0 * (t - 1.0)) * abs(sin(3.0 * PI * t))
                 : 1.0 - 8.0 * pow(2.0, -8.0 * t) * abs(sin(3.0 * PI * t));
         }
+#endif
     }
 }
