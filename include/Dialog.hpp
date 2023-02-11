@@ -1,11 +1,13 @@
 class Dialog
 {
 private:
-    kat::Sprite *character = nullptr;
+    kat::Sprite character;
+    int character_id = -1;
     kat::Sprite dialogBox = kat::Sprite("dialog_box.png");
     kat::Sound dialog_sound = kat::SoundManager::getSound("dialog.wav");
     kat::Text text = kat::Text("dialog.ttf", 16);
 
+public:
     struct DialogEvent
     {
         enum {
@@ -21,7 +23,7 @@ private:
 
         union {
             struct {
-                kat::Sprite *character;
+                int id;
             } set;
             struct {
                 std::string text;
@@ -35,69 +37,68 @@ private:
             struct {
                 float time;
             } wait;
-
-            static DialogEvent setCharacter(kat::Sprite *character)
-            {
-                DialogEvent event;
-                event.type = SET_CHARACTER;
-                event.data.set.character = character;
-                return event;
-            }
-
-            static DialogEvent talk(std::string text)
-            {
-                DialogEvent event;
-                event.type = TALK;
-                event.data.talk.text = text;
-                return event;
-            }
-
-            static DialogEvent sound(std::string filename)
-            {
-                DialogEvent event;
-                event.type = SOUND;
-                event.data.sound.filename = filename;
-                return event;
-            }
-
-            static DialogEvent music(std::string filename)
-            {
-                DialogEvent event;
-                event.type = MUSIC;
-                event.data.music.filename = filename;
-                return event;
-            }
-
-            static DialogEvent wait(float time)
-            {
-                DialogEvent event;
-                event.type = WAIT;
-                event.data.wait.time = time;
-                return event;
-            }
-
-            static DialogEvent removeCharacter()
-            {
-                DialogEvent event;
-                event.type = REMOVE_CHARACTER;
-                return event;
-            }
-
-            static DialogEvent showUI()
-            {
-                DialogEvent event;
-                event.type = SHOW_UI;
-                return event;
-            }
-
-            static DialogEvent hideUI()
-            {
-                DialogEvent event;
-                event.type = HIDE_UI;
-                return event;
-            }
-
         } data;
+
+        static DialogEvent setCharacter(int id)
+        {
+            DialogEvent event;
+            event.type = SET_CHARACTER;
+			event.data.set.id = id;
+            return event;
+        }
+
+        static DialogEvent talk(std::string text)
+        {
+            DialogEvent event;
+            event.type = TALK;
+            event.data.talk.text = text;
+            return event;
+        }
+
+        static DialogEvent sound(std::string filename)
+        {
+            DialogEvent event;
+            event.type = SOUND;
+            event.data.sound.filename = filename;
+            return event;
+        }
+
+        static DialogEvent music(std::string filename)
+        {
+            DialogEvent event;
+            event.type = MUSIC;
+            event.data.music.filename = filename;
+            return event;
+        }
+
+        static DialogEvent wait(float time)
+        {
+            DialogEvent event;
+            event.type = WAIT;
+            event.data.wait.time = time;
+            return event;
+        }
+
+        static DialogEvent removeCharacter()
+        {
+            DialogEvent event;
+            event.type = REMOVE_CHARACTER;
+            return event;
+        }
+
+        static DialogEvent showUI()
+        {
+            DialogEvent event;
+            event.type = SHOW_UI;
+            return event;
+        }
+
+        static DialogEvent hideUI()
+        {
+            DialogEvent event;
+            event.type = HIDE_UI;
+            return event;
+        }
 
         enum {
             NONE,
@@ -106,8 +107,11 @@ private:
             STARTED_WAITING,
             FINISHED_WAITING
         } optional_state = NONE;
+
+        DialogEvent() = default;
     };
 
+private:
     bool show_ui = false;
     float text_speed = 0.1f;
     float text_timer = 0.0f;
@@ -140,25 +144,25 @@ public:
                 event.optional_state = SET_CHARACTER_REPLACING;
                 break;
             case SET_CHARACTER_REPLACING:
-                if (!character)
+                if (character_id == -1)
                 {
-                    character = event.data.set.character;
+                    character_id = event.data.set.id;
                     event.optional_state = SET_CHARACTER_ENTERING;
                 }
-                else if (character->getPosition().x + character->getSize().x < 0)
+                else if (character.getPosition().x + character.getSize().x < 0)
                 {
-                    character = nullptr;
+                    character_id = -1;
                     break;
                 }
                 else
                 {
-                    character->move(-dt * 100, 0);
+                    character.move(-dt * 100, 0);
                 }
                 break;
             case SET_CHARACTER_ENTERING:
-                if (character->getPosition().x + character->getSize().x < 0)
+                if (character.getPosition().x + character.getSize().x < 0)
                 {
-                    character->move(dt * 100, 0);
+                    character.move(dt * 100, 0);
                 }
                 else
                 {
@@ -168,12 +172,12 @@ public:
             }
             break;
         case DialogEvent::REMOVE_CHARACTER:
-            if (character)
+            if (character_id != -1)
             {
-                character->move(-dt * 100, 0);
-                if (character->getPosition().x + character->getSize().x < 0)
+                character.move(-dt * 100, 0);
+                if (character.getPosition().x + character.getSize().x < 0)
                 {
-                    character = nullptr;
+					character_id = -1;
                     events.pop_front();
                 }
             }

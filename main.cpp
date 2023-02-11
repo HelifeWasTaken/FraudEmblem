@@ -7,10 +7,12 @@
 
 #include <iostream>
 
+
 #include "Context.hpp"
 #include "component/Character.hpp"
 #include "resource.h"
 #include "state/BattleState.hpp"
+// #include "Dialog.hpp"
 
 int main(void) {
     emblem::Context::loadResources();
@@ -35,6 +37,5 @@ int main(void) {
         emblem::Context::update();
         emblem::Context::render();
     }
-
     return 0;
 }
