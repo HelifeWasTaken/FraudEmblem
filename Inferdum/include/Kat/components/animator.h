@@ -250,5 +250,7 @@ namespace kat {
         bool isFlippedX() const;
         bool isFlippedY() const;
 
+        void reloadSprite(Sprite& sprite);
+
     };
 }

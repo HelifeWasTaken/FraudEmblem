@@ -186,4 +186,9 @@ namespace kat {
     bool Animator::isFlippedY() const {
         return m_sprite.isFlippedY();
     }
+
+    void Animator::reloadSprite(Sprite& sprite) {
+        m_sprite = std::move(kat::Sprite(sprite));
+        _defaultAnimation();
+    }
 }

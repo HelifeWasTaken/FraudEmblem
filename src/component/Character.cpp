@@ -117,26 +117,36 @@ emblem::CharacterFactory *emblem::CharacterFactory::__instance = nullptr;
 bool emblem::PathManager::update(entt::entity &entity, float dt) {
     auto &registry = emblem::Context::entt();
     auto &sprite = registry.get<kat::Sprite>(entity);
+    auto &transform = registry.get<emblem::Transform>(entity);
     auto &animator = registry.get<kat::Animator>(entity);
 
-    auto current = sprite.getPosition();
-    auto &next = path[index];
-
-    sf::Vector2f direction = { current.x - next.x, current.y - next.y };
-    auto cspeed = SPEED * dt;
-
-    if (index >= path.size()) {
+    if (index == (size_t)-1) {
         animator.play("idle");
+        transform.x = path[0].x;
+        transform.y = path[0].y;
         return false;
     }
 
-    if (abs(direction.x) < cspeed) {
-        direction.x = 0;
-        sprite.setPosition(next.x, sprite.getPosition().y);
-    } else if (abs(direction.y) < cspeed) {
-        sprite.setPosition(sprite.getPosition().x, next.y);
-    } else if (direction.x == 0 && direction.y == 0) {
-        index++;
+    auto current = sprite.getPosition();
+    current.x -= 8;
+    current.y -= 8;
+    current.x /= 16;
+    current.y /= 16;
+    auto &next = path[index];
+
+    sf::Vector2f direction = { current.x - next.x, current.y - next.y };
+    auto cspeed = SPEED * dt * 10;
+
+
+
+    std::cout << cspeed << std::endl;
+    std::cout << "current: " << current.x << ", " << current.y << std::endl;
+    std::cout << "direction: " << direction.x << ", " << direction.y << std::endl;
+    std::cout << "next: " << next.x << ", " << next.y << std::endl;
+    std::cout << "index: " << index << std::endl;
+
+    if (direction.x == 0 && direction.y == 0) {
+        index--;
         return true;
     } else if (direction.x >= cspeed) {
         animator.play("walk_west");
@@ -148,8 +158,15 @@ bool emblem::PathManager::update(entt::entity &entity, float dt) {
         animator.play("walk_east");
         sprite.move(cspeed, 0);
     } else if (direction.y <= -cspeed) {
+        std::cout << "kek" << std::endl;
         animator.play("walk_south");
         sprite.move(0, cspeed);
+    } else if (abs(direction.x) < cspeed && direction.x != 0) {
+        std::cout << "bamboo" << std::endl;
+        sprite.setPosition(next.x * 16 + 8, sprite.getPosition().y);
+    } else if (abs(direction.y) < cspeed && direction.y != 0) {
+        std::cout << "hjkgrebfhjkgegbr" << std::endl;
+        sprite.setPosition(sprite.getPosition().x, next.y * 16 + 8);
     }
     return true;
 }

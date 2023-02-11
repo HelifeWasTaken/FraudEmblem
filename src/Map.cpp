@@ -181,6 +181,8 @@ emblem::Path emblem::Map::findShortestPathTo(
 
     std::vector<emblem::Path> paths;
     for (auto &[pos, type] : aviablePaths) {
+        if (type == WALL)
+            continue;
         auto subResult = findShortestPathTo(pos.x, pos.y, toX, toY, maxStep - 1);
         if (subResult.size() > 0) {
             subResult.push_back(pos);
@@ -206,5 +208,13 @@ emblem::Path emblem::Map::findShortestPathTo(
     }
 
     result = paths[minPathIndex];
+    return result;
+}
+
+emblem::Area emblem::pathToArea(const emblem::Path &path) {
+    Area result;
+    for (auto &point : path) {
+        result.insert({ point, EMPTY });
+    }
     return result;
 }

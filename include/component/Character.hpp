@@ -47,13 +47,14 @@ namespace emblem {
     };
 
     class PathManager {
-        size_t index = 0;
+        size_t index;
         emblem::Path path;
 
         static constexpr float SPEED = 4;
 
     public:
-        PathManager(const emblem::Path& path) : path(path) {}
+        PathManager(const emblem::Path& path) : path(path)
+         , index(path.size() - 1) {}
 
         bool update(entt::entity &entity, float dt);
     };

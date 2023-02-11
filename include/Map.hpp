@@ -13,6 +13,7 @@
 #include <cmath>
 #include <vector>
 #include <unordered_set>
+#include <algorithm>
 
 namespace emblem {
     struct Point {
@@ -56,7 +57,7 @@ namespace emblem {
         }
 
         Cell &setEntityType(uint8_t type) {
-            __data &= EXCLUDE_MASK_CELL_TYPE;
+            __data &= EXCLUDE_MASK_CELL_ENTITY_TYPE;
             __data |= (type & 0xf) << 4;
             return *this;
         }
@@ -117,11 +118,20 @@ namespace emblem {
                 const int64_t &maxStep
             );
     };
+
+    Area pathToArea(const Path &path);
 }
 
 template<>
 struct std::hash<std::pair<emblem::Point, emblem::CellType>> {
     size_t operator()(const std::pair<emblem::Point, emblem::CellType> &pair) const {
-        return std::hash<size_t>()(pair.first.x) ^ std::hash<size_t>()(pair.first.y) ^ std::hash<size_t>()(pair.second);
+        return std::hash<size_t>()(pair.first.x) ^ std::hash<size_t>()(pair.first.y);
+    }
+};
+
+template<>
+struct std::hash<emblem::Point> {
+    size_t operator()(const emblem::Point &point) const {
+        return std::hash<size_t>()(point.x) ^ std::hash<size_t>()(point.y);
     }
 };
