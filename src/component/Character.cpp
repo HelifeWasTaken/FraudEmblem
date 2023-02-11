@@ -9,19 +9,32 @@
 
 entt::entity emblem::createCharacter(const nlohmann::json &json) {
     auto &registry = emblem::Context::entt();
+    auto &resources = emblem::Context::resources();
     auto entity = registry.create();
 
-    std::string path = json.at("texture");
-    path = "../assets/textures/" + path;
+    std::string rawKey = json.at("texture");
+
+    rawKey = rawKey.substr(0, rawKey.size() - (rawKey.size() - rawKey.find_last_of('.')));
+    std::cout << "rawKey " << std::quoted(rawKey, '\'') << std::endl;
 
     registry.emplace<kat::Texture>(entity);
-    auto &texture = registry.get<kat::Texture>(entity).load(path);
+    auto &texture = registry.get<kat::Texture>(entity).load(
+        resources.getResource<kat::Texture>(
+            "texture:" + rawKey
+        )
+    );
 
     registry.emplace<kat::Sprite>(entity);
     auto &sprite = registry.get<kat::Sprite>(entity).create(texture);
 
     registry.emplace<kat::Animator>(entity, sprite);
     auto &animator = registry.get<kat::Animator>(entity);
+
+    registry.emplace<emblem::Transform>(entity);
+    auto &transform = registry.get<emblem::Transform>(entity);
+
+    sprite.setOrigin(16, 16);
+    sprite.setPosition(8 + transform.x * 16, 8 + transform.y * 16);
 
     nlohmann::json stats = json.at("stats");
 
@@ -47,7 +60,17 @@ entt::entity emblem::createCharacter(const nlohmann::json &json) {
             entry.at("speed"),
             entry.at("loop")
         );
+
+        if (entry.find("flipX") != entry.end()) {
+            animator.getAnimation(entry.at("name")).flipX = entry.at("flipX");
+        }
+
+        if (entry.find("flipY") != entry.end()) {
+            animator.getAnimation(entry.at("name")).flipY = entry.at("flipY");
+        }
     }
+
+    animator.playAnimation("idle");
 
     return entity;
 }
@@ -62,8 +85,6 @@ void emblem::CharacterFactory::loadCharacters(const std::string &dirPath) {
     auto dir = std::filesystem::directory_iterator(dirPath);
 
     for (auto entry : dir) {
-        std::cout << entry.path().string() << std::endl;
-        std::cout << entry.path().stem() << std::endl;
         std::ifstream file(entry.path().string());
         registerCharacter(entry.path().stem().string(), nlohmann::json::parse(file));
         file.close();
@@ -118,16 +139,16 @@ bool emblem::PathManager::update(entt::entity &entity, float dt) {
         index++;
         return true;
     } else if (direction.x >= cspeed) {
-        animator.play("walk_left");
+        animator.play("walk_west");
         sprite.move(-cspeed, 0);
     } else if (direction.y >= cspeed) {
-        animator.play("walk_up");
+        animator.play("walk_north");
         sprite.move(0, -cspeed);
     } else if (direction.x <= -cspeed) {
-        animator.play("walk_right");
+        animator.play("walk_east");
         sprite.move(cspeed, 0);
     } else if (direction.y <= -cspeed) {
-        animator.play("walk_down");
+        animator.play("walk_south");
         sprite.move(0, cspeed);
     }
     return true;

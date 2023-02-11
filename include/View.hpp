@@ -17,6 +17,7 @@ namespace emblem {
             View(const sf::FloatRect &viewport);
             View(const sf::Vector2f &pos, const sf::Vector2f &size);
             View(const float &x, const float &y, const float &width, const float &height);
+            View(const sf::View &view);
             ~View() = default;
 
             View &setCenter(const float &x, const float &y);

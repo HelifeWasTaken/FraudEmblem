@@ -7,17 +7,33 @@
 
 #pragma once
 
+#include <filesystem>
+#include <SFML/Window.hpp>
+
 #include "entt/entt.hpp"
-#include "window.h"
+#include "Window.hpp"
+#include "resource.h"
+#include "state/Machine.hpp"
+#include "component/Character.hpp"
 
 namespace emblem {
     class Context {
         entt::registry __registry;
-        kat::Window __window;
+        Window __window;
+        kat::ResourceManager __resources;
+        StateMachine __stateMachine;
+
+        std::filesystem::path __assetsPath = "../assets";
+
+        sf::Event ___event;
+        sf::Clock __clock;
 
         static Context *__instance;
 
         Context();
+
+        protected:
+            static void _loadTextures(const std::filesystem::path &path);
 
         public:
             ~Context() = default;
@@ -25,7 +41,29 @@ namespace emblem {
             static Context &instance();
 
             static entt::registry &entt();
-            static kat::Window &window();
+            static Window &window();
+            static kat::ResourceManager &resources();
 
+            static std::filesystem::path &assetsPath();
+            static void loadResources();
+
+            template<typename T>
+            static T &getResource(const std::string& name) {
+                return resources().getResource<T>(name);
+            }
+
+            static StateMachine &stateMachine();
+
+            template<typename T, typename... Args>
+            static Context &registerState(const std::string &name, Args &&... args) {
+                instance().__stateMachine.registerState<T>(name, std::forward<Args>(args)...);
+                return instance();
+            }
+
+            static void load(const std::string &name);
+
+            static void update();
+            static void event();
+            static void render();
     };
 }

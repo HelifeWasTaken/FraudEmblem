@@ -18,6 +18,14 @@ namespace kat {
         loop = ploop;
     }
 
+    void Animation::setFlipX(const bool& flip) {
+        flipX = flip;
+    }
+
+    void Animation::setFlipY(const bool& flip) {
+        flipY = flip;
+    }
+
     void Animator::_defaultAnimation() {
         auto anim = Animation();
         const auto& tx_size = m_sprite.getTexture().size();
@@ -47,6 +55,10 @@ namespace kat {
         return *this;
     }
 
+    Animation &Animator::getAnimation(const AnimationName &name) {
+        return m_animations[name];
+    }
+
     Animator& Animator::removeAnimation(const AnimationName& name) {
         m_animations.erase(name);
         return *this;
@@ -64,6 +76,8 @@ namespace kat {
         m_frame_time = 0.0f;
         m_frame_index = 0;
         m_sprite.setTextureRect(m_current_animation->frames[0]);
+        m_sprite.flipX(m_current_animation->flipX);
+        m_sprite.flipY(m_current_animation->flipY);
         return *this;
     }
 
@@ -153,5 +167,23 @@ namespace kat {
         const bool& loop)
     {
         return addAnimationSpritesheet(name, frames, frame_size, frame_time, m_sprite.getTexture().size(), loop);
+    }
+
+    Animator &Animator::flipX(const bool &flip) {
+        m_sprite.flipX(flip);
+        return *this;
+    }
+
+    Animator &Animator::flipY(const bool &flip) {
+        m_sprite.flipY(flip);
+        return *this;
+    }
+
+    bool Animator::isFlippedX() const {
+        return m_sprite.isFlippedX();
+    }
+
+    bool Animator::isFlippedY() const {
+        return m_sprite.isFlippedY();
     }
 }

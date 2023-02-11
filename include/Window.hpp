@@ -23,8 +23,7 @@ namespace emblem {
         std::vector<std::tuple<kat::ZAxis, std::string, ViewRender>> __views;
 
         public:
-            Window();
-            ~Window();
+            ~Window() = default;
 
             Window(kat::WindowHandle handle, const kat::ContextSettings& settings = sf::ContextSettings());
             Window(kat::VideoMode mode, const std::string& title = "Kat", kat::WindowStyle style = kat::WindowStyle::Default, const kat::ContextSettings& settings = sf::ContextSettings());
@@ -57,8 +56,15 @@ namespace emblem {
             const kat::Window& get_handle() const;
 
             template<typename Drawable>
-            requires kat::KatDrawable<Drawable, Window>
+            requires kat::KatDrawable<Drawable, kat::Window>
             Window& draw(const Drawable& drawable, const std::string &view = "default", kat::ZAxis z = 0) {
+                auto &viewRender = getViewRender(view);
+
+                viewRender.second.add(drawable, z);
+                return *this;
+            }
+
+            Window& draw(const kat::shared_drawable_t &drawable, const std::string &view = "default", kat::ZAxis z = 0) {
                 auto &viewRender = getViewRender(view);
 
                 viewRender.second.add(drawable, z);

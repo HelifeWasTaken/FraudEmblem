@@ -20,6 +20,7 @@
 #include "nlohmann/json.hpp"
 #include "Context.hpp"
 #include "component/Stats.hpp"
+#include "component/Transform.hpp"
 
 #include "Map.hpp"
 

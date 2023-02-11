@@ -12,11 +12,16 @@
 #include <climits>
 #include <cmath>
 #include <vector>
+#include <unordered_set>
 
 namespace emblem {
     struct Point {
-        size_t x;
-        size_t y;
+        size_t x = 0;
+        size_t y = 0;
+
+        bool operator==(const Point &other) const {
+            return x == other.x && y == other.y;
+        }
     };
 
     static const size_t MASK_CELL_TYPE = 0x0f;
@@ -28,6 +33,7 @@ namespace emblem {
     enum CellType {
         EMPTY,
         WALL,
+        INTERACT,
         ENTITY
     };
 
@@ -67,6 +73,7 @@ namespace emblem {
             size_t __data = 0;
     };
 
+    using Area = std::unordered_set<std::pair<Point, CellType>>;
     using Path = std::vector<Point>;
 
     class Map {
@@ -77,37 +84,44 @@ namespace emblem {
 
         public:
             Map(const size_t &width, const size_t &height);
-            ~Map();
+            ~Map() = default;
 
+            void setWall(const size_t &x, const size_t &y);
+            void setEmpty(const size_t &x, const size_t &y);
+            void setEntity(const size_t &x, const size_t &y, const uint8_t &type);
 
-        void setWall(const size_t &x, const size_t &y);
-        void setEmpty(const size_t &x, const size_t &y);
-        void setEntity(const size_t &x, const size_t &y, const uint8_t &type);
+            void setCell(const size_t &x, const size_t &y, const Cell &value);
 
-        void setCell(const size_t &x, const size_t &y, const Cell &value);
+            bool isWall(const size_t &x, const size_t &y) const;
+            bool isEmpty(const size_t &x, const size_t &y) const;
+            bool isEntity(const size_t &x, const size_t &y) const;
 
-        bool isWall(const size_t &x, const size_t &y) const;
-        bool isEmpty(const size_t &x, const size_t &y) const;
-        bool isEntity(const size_t &x, const size_t &y) const;
+            bool isHero(const size_t &x, const size_t &y) const;
+            bool isVillain(const size_t &x, const size_t &y) const;
 
-        bool isHero(const size_t &x, const size_t &y) const;
-        bool isVillain(const size_t &x, const size_t &y) const;
+            Cell &getCell(const size_t &x, const size_t &y);
+            const Cell &getCell(const size_t &x, const size_t &y) const;
 
-        const Cell &getCell(const size_t &x, const size_t &y) const;
+            const size_t &getWidth() const;
+            const size_t &getHeight() const;
 
-        const size_t &getWidth() const;
-        const size_t &getHeight() const;
+            Area getAviablePaths(const size_t &x, const size_t &y, const size_t &maxStep);
 
-        Path getAviablePaths(const size_t &x, const size_t &y, const size_t &maxStep);
+            Path findPath(const size_t &x, const size_t &y, const size_t &target_x, const size_t &target_y);
 
-        Path findPath(const size_t &x, const size_t &y, const size_t &target_x, const size_t &target_y);
-
-        Path findShortestPathTo(
-            const int64_t &fromX,
-            const int64_t &fromY,
-            const int64_t &toX,
-            const int64_t &toY,
-            const int64_t &maxStep
-        );
+            Path findShortestPathTo(
+                const int64_t &fromX,
+                const int64_t &fromY,
+                const int64_t &toX,
+                const int64_t &toY,
+                const int64_t &maxStep
+            );
     };
 }
+
+template<>
+struct std::hash<std::pair<emblem::Point, emblem::CellType>> {
+    size_t operator()(const std::pair<emblem::Point, emblem::CellType> &pair) const {
+        return std::hash<size_t>()(pair.first.x) ^ std::hash<size_t>()(pair.first.y) ^ std::hash<size_t>()(pair.second);
+    }
+};

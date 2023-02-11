@@ -1,6 +1,7 @@
 #pragma once
 
 #include <typeindex>
+#include <iostream>
 #include <unordered_map>
 #include <any>
 
@@ -52,6 +53,7 @@ namespace kat {
          */
         template<typename T>
         void addResource(const ResourceName& name, const T& resource) {
+            std::cout << "Adding resource: " << name << " of type: " << typeid(T).name() << std::endl;
             const auto typid = typeid(T).name();
             if (m_registry.find(typid) == m_registry.end())
                 m_registry[typid] = ResourceMap();
@@ -65,6 +67,7 @@ namespace kat {
          */
         template<typename T>
         void addResource(const ResourceName& name, T&& resource) {
+            std::cout << "Adding resource: " << name << " of type: " << typeid(T).name() << std::endl;
             const auto typid = typeid(T).name();
             if (m_registry.find(typid) == m_registry.end())
                 m_registry[typid] = ResourceMap();
@@ -78,13 +81,14 @@ namespace kat {
          */
         template<typename T>
         T &getResource(const ResourceName& name) {
+            std::cout << "Getting resource: " << name << " of type: " << typeid(T).name() << std::endl;
             const auto typid = typeid(T).name();
             const auto type = m_registry.find(typid);
             if (type == m_registry.end())
                 throw std::runtime_error("Resource type not found.");
             const auto resource = type->second.find(name);
             if (resource == type->second.end())
-                throw std::runtime_error("Resource not found.");
+                throw std::runtime_error("Resource '" + name + "' not found.");
             return std::any_cast<T&>(resource->second);
         }
 

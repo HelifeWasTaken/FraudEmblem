@@ -10,45 +10,30 @@
 #include "Context.hpp"
 #include "component/Character.hpp"
 #include "resource.h"
+#include "state/BattleState.hpp"
 
 int main(void) {
-    emblem::CharacterFactory::loadCharacters("../assets/characters/");
-    auto &registry = emblem::Context::entt();
-    auto ent = emblem::CharacterFactory::createCharacter("test");
-    auto &stat = registry.get<emblem::Stats>(ent);
-    auto &sprite = registry.get<kat::Sprite>(ent);
-    registry.get<kat::Animator>(ent).playAnimation("IDLE");
+    emblem::Context::loadResources();
+
+    // emblem::CharacterFactory::loadCharacters("../assets/characters/");
+    // auto &registry = emblem::Context::entt();
+    // auto &resources = emblem::Context::resources();
+    // auto ent = emblem::CharacterFactory::createCharacter("map_assasin");
+    // // auto &stat = registry.get<emblem::Stats>(ent);
+    // auto &sprite = registry.get<kat::Sprite>(ent);
+    // sprite.setOrigin(16, 16);
+    // // sprite.setOrigin(sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height / 2);
+    // auto &anim = registry.get<kat::Animator>(ent).playAnimation("idle");
     auto &win = emblem::Context::window();
 
-    kat::ResourceManager manager;
+    win.getView("default").setCenter(0, 0).setSize(240, 160);
 
-    manager.addResource("yes", kat::Texture().load("../assets/textures/map/snow_mountains.png"));
-
-    kat::Sprite s;
-    s.create(manager.getResource<kat::Texture>("yes"));
-    s.scale(2);
-
-    std::cout << stat << std::endl;
-
-    sf::Event e;
-    sf::Clock c;
+    emblem::Context::registerState<emblem::BattleState>("battle", "../assets/scene/battle_test.json");
+    emblem::Context::load("battle");
 
     while (win.isOpen()) {
-        auto view = registry.view<kat::Animator>();
-
-        for (auto &&[entity, anim] : view.each()) {
-            anim.update(c.getElapsedTime().asSeconds());
-        }
-        c.restart();
-
-        win.clear();
-        while (win.poll(e)) {
-            if (e.type == sf::Event::Closed)
-                win.close();
-        }
-        win.draw(s);
-        win.draw(sprite);
-        win.display();
+        emblem::Context::update();
+        emblem::Context::render();
     }
 
     return 0;

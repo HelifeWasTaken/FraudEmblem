@@ -10,45 +10,53 @@
 emblem::Map::Map(const size_t &width, const size_t &height) : __width(width), __height(height) {
     __map.reserve(width);
 
-    for (auto entry : __map)
-        entry.reserve(height);
+    for (size_t i = 0; i < width; i++) {
+        __map.emplace_back(std::vector<emblem::Cell>(height));
+        for (size_t j = 0; j < height; j++) {
+            __map.at(i).push_back(emblem::Cell());
+        }
+    }
 }
 
 void emblem::Map::setWall(const size_t &x, const size_t &y) {
-    __map[x][y].setCellType(WALL);
+    __map.at(x).at(y).setCellType(WALL);
 }
 
 void emblem::Map::setEmpty(const size_t &x, const size_t &y) {
-    __map[x][y].setCellType(EMPTY);
+    __map.at(x).at(y).setCellType(EMPTY);
 }
 
 void emblem::Map::setEntity(const size_t &x, const size_t &y, const uint8_t &type) {
-    __map[x][y].setCellType(ENTITY);
-    __map[x][y].setEntityType(type);
+    __map.at(x).at(y).setCellType(ENTITY);
+    __map.at(x).at(y).setEntityType(type);
 }
 
 void emblem::Map::setCell(const size_t &x, const size_t &y, const emblem::Cell &value) {
-    __map[x][y] = value;
+    __map.at(x).at(y) = value;
 }
 
 bool emblem::Map::isWall(const size_t &x, const size_t &y) const {
-    return __map[x][y].getCellType() == WALL;
+    return __map.at(x).at(y).getCellType() == WALL;
 }
 
 bool emblem::Map::isEmpty(const size_t &x, const size_t &y) const {
-    return __map[x][y].getCellType() == EMPTY;
+    return __map.at(x).at(y).getCellType() == EMPTY;
 }
 
 bool emblem::Map::isEntity(const size_t &x, const size_t &y) const {
-    return __map[x][y].getCellType() == ENTITY;
+    return __map.at(x).at(y).getCellType() == ENTITY;
 }
 
 bool emblem::Map::isHero(const size_t &x, const size_t &y) const {
-    return __map[x][y].getEntityType() == HERO;
+    return __map.at(x).at(y).getEntityType() == HERO;
 }
 
 bool emblem::Map::isVillain(const size_t &x, const size_t &y) const {
-    return __map[x][y].getEntityType() == VILLAIN;
+    return __map.at(x).at(y).getEntityType() == VILLAIN;
+}
+
+emblem::Cell &emblem::Map::getCell(const size_t &x, const size_t &y) {
+    return __map.at(x).at(y);
 }
 
 const emblem::Cell &emblem::Map::getCell(const size_t &x, const size_t &y) const {
@@ -64,42 +72,58 @@ const size_t &emblem::Map::getHeight() const {
 }
 
 // You cannot go through walls in diagonal directions and behind players
-emblem::Path emblem::Map::getAviablePaths(const size_t &x, const size_t &y, const size_t &maxStep) {
-    emblem::Path result;
+emblem::Area emblem::Map::getAviablePaths(const size_t &x, const size_t &y, const size_t &maxStep) {
+    emblem::Area result;
 
     if (maxStep == 0) {
         return result;
     }
 
-    if (x > 0 && !isWall(x - 1, y)) {
-        result.push_back({ x - 1, y });
-        if (isEmpty(x - 1, y)) {
-            auto subResult = getAviablePaths(x - 1, y, maxStep - 1);
-            result.insert(result.end(), subResult.begin(), subResult.end());
+    if (x > 0) {
+        if (isWall(x - 1, y) || isEntity(x - 1, y)) {
+            result.insert(std::make_pair<emblem::Point, emblem::CellType>({ x - 1, y }, WALL));
+        } else {
+            result.insert(std::make_pair<emblem::Point, emblem::CellType>({ x - 1, y }, EMPTY));
+            if (isEmpty(x - 1, y)) {
+                auto subResult = getAviablePaths(x - 1, y, maxStep - 1);
+                result.merge(subResult);
+            }
         }
     }
 
-    if (x < __width - 1 && !isWall(x + 1, y)) {
-        result.push_back({ x + 1, y });
-        if (isEmpty(x + 1, y)) {
-            auto subResult = getAviablePaths(x + 1, y, maxStep - 1);
-            result.insert(result.end(), subResult.begin(), subResult.end());
+    if (x < __width - 1) {
+        if (isWall(x + 1, y) || isEntity(x + 1, y)) {
+            result.insert(std::make_pair<emblem::Point, emblem::CellType>({ x + 1, y }, WALL));
+        } else {
+            result.insert(std::make_pair<emblem::Point, emblem::CellType>({ x + 1, y }, EMPTY));
+            if (isEmpty(x + 1, y)) {
+                auto subResult = getAviablePaths(x + 1, y, maxStep - 1);
+                result.merge(subResult);
+            }
         }
     }
 
-    if (y > 0 && !isWall(x, y - 1)) {
-        result.push_back({ x, y - 1 });
-        if (isEmpty(x, y - 1)) {
-            auto subResult = getAviablePaths(x, y - 1, maxStep - 1);
-            result.insert(result.end(), subResult.begin(), subResult.end());
+    if (y > 0) {
+        if (isWall(x, y - 1) || isEntity(x, y - 1)) {
+            result.insert(std::make_pair<emblem::Point, emblem::CellType>({ x, y - 1 }, WALL));
+        } else {
+            result.insert(std::make_pair<emblem::Point, emblem::CellType>({ x, y - 1 }, EMPTY));
+            if (isEmpty(x, y - 1)) {
+                auto subResult = getAviablePaths(x, y - 1, maxStep - 1);
+                result.merge(subResult);
+            }
         }
     }
 
-    if (y < __height - 1 && !isWall(x, y + 1)) {
-        result.push_back({ x, y + 1 });
-        if (isEmpty(x, y + 1)) {
-            auto subResult = getAviablePaths(x, y + 1, maxStep - 1);
-            result.insert(result.end(), subResult.begin(), subResult.end());
+    if (y < __height - 1) {
+        if (isWall(x, y + 1) || isEntity(x, y + 1)) {
+            result.insert({{ x, y + 1 }, WALL});
+        } else {
+            result.insert({{ x, y + 1 }, EMPTY});
+            if (isEmpty(x, y + 1)) {
+                auto subResult = getAviablePaths(x, y + 1, maxStep - 1);
+                result.merge(subResult);
+            }
         }
     }
     return result;
@@ -112,18 +136,18 @@ emblem::Path emblem::Map::findPath(const size_t &x, const size_t &y, const size_
         return result;
     }
 
-    emblem::Path aviablePaths = getAviablePaths(x, y, 1);
-    for (auto path : aviablePaths) {
-        if (path.x == target_x && path.y == target_y) {
-            result.push_back(path);
+    emblem::Area aviablePaths = getAviablePaths(x, y, 1);
+    for (auto &[pos, type] : aviablePaths) {
+        if (pos.x == target_x && pos.y == target_y) {
+            result.push_back(pos);
             return result;
         }
     }
 
-    for (auto path : aviablePaths) {
-        auto subResult = findPath(path.x, path.y, target_x, target_y);
+    for (auto &[pos, type] : aviablePaths) {
+        auto subResult = findPath(pos.x, pos.y, target_x, target_y);
         if (subResult.size() > 0) {
-            result.push_back(path);
+            result.push_back(pos);
             result.insert(result.end(), subResult.begin(), subResult.end());
             return result;
         }
@@ -147,19 +171,19 @@ emblem::Path emblem::Map::findShortestPathTo(
         return result;
     }
 
-    emblem::Path aviablePaths = getAviablePaths(fromX, fromY, 1);
-    for (auto path : aviablePaths) {
-        if (path.x == toX && path.y == toY) {
-            result.push_back(path);
+    emblem::Area aviablePaths = getAviablePaths(fromX, fromY, 1);
+    for (auto &[pos, type] : aviablePaths) {
+        if (pos.x == toX && pos.y == toY) {
+            result.push_back(pos);
             return result;
         }
     }
 
     std::vector<emblem::Path> paths;
-    for (auto path : aviablePaths) {
-        auto subResult = findShortestPathTo(path.x, path.y, toX, toY, maxStep - 1);
+    for (auto &[pos, type] : aviablePaths) {
+        auto subResult = findShortestPathTo(pos.x, pos.y, toX, toY, maxStep - 1);
         if (subResult.size() > 0) {
-            subResult.push_back(path);
+            subResult.push_back(pos);
             paths.push_back(subResult);
         }
     }

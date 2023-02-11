@@ -270,8 +270,17 @@ namespace kat {
         const sf::Sprite *raw_handle() const;
         shared_drawable_t as_drawable() const;
 
+        Sprite &flipX(bool flip);
+        Sprite &flipY(bool flip);
+
+        bool isFlippedX() const;
+        bool isFlippedY() const;
+
     private:
         Texture m_texture;
         shared_sprite_t m_sprite = std::make_shared<sf::Sprite>();
+
+        bool __flipX = false;
+        bool __flipY = false;
     };
 }

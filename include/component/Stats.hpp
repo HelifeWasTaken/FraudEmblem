@@ -44,6 +44,8 @@ namespace emblem {
 
             void lvlUp();
 
+            void setLvl(size_t lvl);
+
             const size_t &xp() const { return __xp; };
             const size_t &xpRequired() const { return __xpRequired; };
     };

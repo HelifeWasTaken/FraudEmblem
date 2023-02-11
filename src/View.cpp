@@ -13,6 +13,10 @@ emblem::View::View(const sf::Vector2f &pos, const sf::Vector2f &size) : __handle
 
 emblem::View::View(const float &x, const float &y, const float &width, const float &height) : __handle(sf::Vector2f(x, y), sf::Vector2f(width, height)) {}
 
+emblem::View::View(const sf::View &view) {
+    __handle = view;
+}
+
 emblem::View &emblem::View::setCenter(const float &x, const float &y) {
     __handle.setCenter(x, y);
     return *this;
