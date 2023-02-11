@@ -1,0 +1,63 @@
+{
+    "texture": "map_assasin.png",
+    "stats": {
+        "hp": 250,
+        "atk": 10,
+        "def": 5,
+        "lck": 0,
+        "mov": 7
+    },
+    "animations": [
+        {
+            "name": "idle",
+            "size": {
+                "width": 32,
+                "height": 32
+            },
+            "speed": 0.1,
+            "loop": true,
+            "frames": [0, 1, 2, 3]
+        },
+        {
+            "name": "walk_south",
+            "size": {
+                "width": 32,
+                "height": 32
+            },
+            "speed": 0.1,
+            "loop": true,
+            "frames": [4, 5, 6, 7]
+        },
+        {
+            "name": "walk_west",
+            "size": {
+                "width": 32,
+                "height": 32
+            },
+            "speed": 0.1,
+            "loop": true,
+            "frames": [8, 9, 10, 11]
+        },
+        {
+            "name": "walk_north",
+            "size": {
+                "width": 32,
+                "height": 32
+            },
+            "speed": 0.1,
+            "loop": true,
+            "frames": [12, 13, 14, 15]
+        },
+        {
+            "name": "walk_east",
+            "flipX": true,
+            "size": {
+                "width": 32,
+                "height": 32
+            },
+            "speed": 0.1,
+            "loop": true,
+            "frames": [8, 9, 10, 11]
+        }
+    ]
+}

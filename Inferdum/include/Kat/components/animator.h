@@ -46,6 +46,9 @@ namespace kat {
         FrameTime speed = 0.2; ///< The time each frame is displayed.
         bool loop = true;         ///< Whether the animation should loop.
 
+        bool flipX = false;       ///< Whether the animation should be flipped on the X axis.
+        bool flipY = false;       ///< Whether the animation should be flipped on the Y axis.
+
         /**
          * @brief Default constructor.
          */
@@ -79,6 +82,18 @@ namespace kat {
          * @param loop Whether the animation should loop.
          */
         void setLoop(const bool& loop);
+
+        /**
+         * @brief Set whether the animation should be flipped on the X axis.
+         * @param flip Whether the animation should be flipped on the X axis.
+         */
+        void setFlipX(const bool& flip);
+
+        /**
+         * @brief Set whether the animation should be flipped on the Y axis.
+         * @param flip Whether the animation should be flipped on the Y axis.
+         */
+        void setFlipY(const bool& flip);
     };
 
     /**
@@ -142,6 +157,8 @@ namespace kat {
         * @return A reference to the Animator object.
         */
         Animator& addAnimation(const AnimationName& name, const Animation& animation);
+
+        Animation &getAnimation(const AnimationName &name);
 
        /**
         * @brief Remove an animation from the set of available animations.
@@ -226,5 +243,12 @@ namespace kat {
             const FrameSize& frame_size,
             const FrameTime& frame_time,
             const bool& loop = true);
+
+        Animator &flipX(const bool &flip);
+        Animator &flipY(const bool &flip);
+
+        bool isFlippedX() const;
+        bool isFlippedY() const;
+
     };
 }

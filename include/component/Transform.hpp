@@ -20,9 +20,9 @@ namespace emblem {
     };
 
     struct Transform {
-        Direction facing;
-        size_t x;
-        size_t y;
+        Direction facing = NORTH;
+        size_t x = 0;
+        size_t y = 0;
 
         void face(Direction direction);
         void face(const Point &point);

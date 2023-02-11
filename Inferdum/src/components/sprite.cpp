@@ -182,4 +182,36 @@ namespace kat {
     {
         return m_sprite;
     }
+
+    Sprite &Sprite::flipX(bool flip) {
+        auto scale = getScale();
+        scale.x = std::abs(scale.x);
+        if (flip) {
+            setScale(-scale.x, scale.y);
+        } else {
+            setScale(scale.x, scale.y);
+        }
+        __flipX = flip;
+        return *this;
+    }
+
+    Sprite &Sprite::flipY(bool flip) {
+        auto scale = getScale();
+        scale.y = std::abs(scale.y);
+        if (flip) {
+            setScale(scale.x, -scale.y);
+        } else {
+            setScale(scale.x, scale.y);
+        }
+        __flipY = flip;
+        return *this;
+    }
+
+    bool Sprite::isFlippedX() const {
+        return __flipX;
+    }
+
+    bool Sprite::isFlippedY() const {
+        return __flipY;
+    }
 }

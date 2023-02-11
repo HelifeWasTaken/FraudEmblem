@@ -43,6 +43,13 @@ void emblem::Stats::xp(size_t amount) {
 
 void emblem::Stats::lvlUp() {
     ++lvl;
+    __xp = 0;
+    __xpRequired = 10 * lvl * lvl + 40;
+}
+
+void emblem::Stats::setLvl(size_t lvl) {
+    this->lvl = lvl;
+    __xp = 0;
     __xpRequired = 10 * lvl * lvl + 40;
 }
 

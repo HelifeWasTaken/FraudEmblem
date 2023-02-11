@@ -7,54 +7,35 @@
 
 #include <iostream>
 
+
 #include "Context.hpp"
 #include "component/Character.hpp"
 #include "resource.h"
-#include "Dialog.hpp"
+#include "state/BattleState.hpp"
+// #include "Dialog.hpp"
 
 int main(void) {
-    
+    emblem::Context::loadResources();
+
+    // emblem::CharacterFactory::loadCharacters("../assets/characters/");
+    // auto &registry = emblem::Context::entt();
+    // auto &resources = emblem::Context::resources();
+    // auto ent = emblem::CharacterFactory::createCharacter("map_assasin");
+    // // auto &stat = registry.get<emblem::Stats>(ent);
+    // auto &sprite = registry.get<kat::Sprite>(ent);
+    // sprite.setOrigin(16, 16);
+    // // sprite.setOrigin(sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height / 2);
+    // auto &anim = registry.get<kat::Animator>(ent).playAnimation("idle");
     auto &win = emblem::Context::window();
-    sf::Event e;
-    sf::Clock c;
 
-    kat::InputManager::instance();
+    win.getView("default").setCenter(0, 0).setSize(240, 160);
 
-    kat::ResourceManager res;
-    
-    sf::Font font;
-    font.loadFromFile("../assets/OldLondon.ttf");
-    kat::SoundManager::addSound("dialog", "../assets/dialog.wav");
-    res.addResource("dialog_faces", kat::Texture().load("../assets/dialog_faces.png"));
-    res.addResource("dialog_box", kat::Texture().load("../assets/dialog_box.png"));
-    res.addResource("dialog_font", font);
-
-
-    win.setFps(60);
-
-    Dialog d(res);
-   
-    d.addEvent(Dialog::showUI())
-        .addEvent(Dialog::music("../assets/tchoupi.ogg"))
-        .addEvent(Dialog::setCharacter(0))
-        .addEvent(Dialog::talk("Hi traveler!"))
-        .addEvent(Dialog::talk("Fuck!"))
-        .addEvent(Dialog::setCharacter(12))
-        .addEvent(Dialog::talk("Hi traveler!"));
+    emblem::Context::registerState<emblem::BattleState>("battle", "../assets/scene/battle_test.json");
+    emblem::Context::load("battle");
 
     while (win.isOpen()) {
-        win.clear();
-        while (win.poll(e)) {
-            if (e.type == sf::Event::Closed)
-                win.close();
-            kat::InputManager::instance().updateEvent(e);
-        }
-        d.update(c.getElapsedTime().asSeconds());
-        d.draw(win);
-        win.display();
-        c.restart();
-        kat::InputManager::nextFrame();
+        emblem::Context::update();
+        emblem::Context::render();
     }
-    
     return 0;
 }

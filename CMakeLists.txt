@@ -11,10 +11,12 @@ file(
 
     src/*.cpp
     src/component/*.cpp
+    src/state/*.cpp
     main.cpp
 
     include/*.hpp
     include/component/*.hpp
+    include/state/*.hpp
 
     Inferdum/include/Kat/*.h
     Inferdum/include/Kat/entt/entt.hpp
