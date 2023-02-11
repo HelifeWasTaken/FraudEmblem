@@ -87,13 +87,6 @@ private:
     void updateMouseEvent(Event& event);
 
     /**
-     * \brief Polls events from the window and passes them to the appropriate event updating method.
-     *
-     * \param[in] window The window to poll events from.
-     */
-    void updateEvent(Window& window);
-
-    /**
      * \brief Updates the states of the inputs to their next states.
      *
      * For example, updates the state of a pressed key from pressed to held.
@@ -113,10 +106,11 @@ public:
     static void destroy();
 
     /**
-     * @brief Updates the InputManager with the current state of user input.
-     * @param window The window to use as a reference for mouse position.
+     * \brief Updates the state of the inputs based on the given event.
+     *
+     * \param[in] event The event to process.
      */
-    static void update(Window& window);
+    void updateEvent(sf::Event& event);
 
     /**
      * @brief Advances the InputManager to the next frame.

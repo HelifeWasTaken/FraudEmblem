@@ -81,10 +81,10 @@ namespace kat {
             const auto typid = typeid(T).name();
             const auto type = m_registry.find(typid);
             if (type == m_registry.end())
-                throw std::runtime_error("Resource type not found.");
+                throw std::runtime_error(std::string("Resource type not found: ") + typid + ".");
             const auto resource = type->second.find(name);
             if (resource == type->second.end())
-                throw std::runtime_error("Resource not found.");
+                throw std::runtime_error(std::string("Resource not found with name: ") + name + ".");
             return std::any_cast<T&>(resource->second);
         }
 

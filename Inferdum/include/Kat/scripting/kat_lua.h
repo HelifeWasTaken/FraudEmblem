@@ -531,7 +531,7 @@ namespace kat {
 
             m_kat.new_usertype<InputManager>("InputManager",
                 "update",
-                &InputManager::update,
+                &InputManager::updateEvent,
                 "nextFrame",
                 &InputManager::nextFrame,
                 "isJoystickConnected",

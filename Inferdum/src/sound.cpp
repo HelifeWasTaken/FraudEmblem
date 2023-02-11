@@ -10,15 +10,15 @@ namespace kat {
         return *m_instance;
     }
 
-    void SoundManager::addSound(const std::string& filename)
+    void SoundManager::addSound(const std::string &name, const std::string& filename)
     {
-        instance().m_buffers[filename].loadFromFile(filename);
+        instance().m_buffers[name].loadFromFile(filename);
     }
 
-    sf::Sound SoundManager::getSound(const std::string& filename)
+    sf::Sound SoundManager::getSound(const std::string& name)
     {
         sf::Sound sound;
-        sound.setBuffer(instance().m_buffers[filename]);
+        sound.setBuffer(instance().m_buffers[name]);
         return sound;
     }
 

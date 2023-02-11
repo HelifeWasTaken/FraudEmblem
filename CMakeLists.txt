@@ -28,4 +28,4 @@ target_include_directories(${PROJECT_NAME} PUBLIC include)
 target_include_directories(${PROJECT_NAME} PUBLIC ${SFML_SOURCE_DIR}/include)
 target_include_directories(${PROJECT_NAME} PUBLIC Inferdum/include/Kat)
 
-target_link_libraries(${PROJECT_NAME} PUBLIC sfml-graphics sfml-window sfml-system)
+target_link_libraries(${PROJECT_NAME} PUBLIC sfml-graphics sfml-window sfml-system sfml-audio)

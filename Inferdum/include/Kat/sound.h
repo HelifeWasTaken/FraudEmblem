@@ -15,8 +15,8 @@ namespace kat {
         sf::Music m_music;
     
     public:
-        static void addSound(const std::string& filename);
-        static sf::Sound getSound(const std::string& filename);
+        static void addSound(const std::string &name, const std::string& filename);
+        static sf::Sound getSound(const std::string& name);
 
         static SoundManager& instance();
 

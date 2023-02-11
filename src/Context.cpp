@@ -7,7 +7,7 @@
 
 #include "Context.hpp"
 
-emblem::Context::Context() : __window({1920, 1080}, "Fraud Emblem", kat::WindowStyle::Fullscreen) {}
+emblem::Context::Context() : __window({800, 600}, "Fraud Emblem", kat::WindowStyle::Close) {}
 
 emblem::Context &emblem::Context::instance() {
     if (!__instance)

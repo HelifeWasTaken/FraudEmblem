@@ -68,10 +68,9 @@ namespace kat {
         }
     }
 
-    void InputManager::updateEvent(Window& window)
+    void InputManager::updateEvent(sf::Event& event)
     {
-        sf::Event event;
-        while (window.poll(event)) {
+        {
             updateJoystickEvent(event);
             updateKeyboardEvent(event);
             updateMouseEvent(event);
@@ -106,11 +105,6 @@ namespace kat {
         if (m_Instance)
             delete m_Instance;
         m_Instance = nullptr;
-    }
-
-    void InputManager::update(Window& window)
-    {
-        m_Instance->updateEvent(window);
     }
 
     void InputManager::nextFrame()
