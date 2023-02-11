@@ -163,10 +163,12 @@ bool emblem::PathManager::update(entt::entity &entity, float dt) {
         sprite.move(0, cspeed);
     } else if (abs(direction.x) < cspeed && direction.x != 0) {
         std::cout << "bamboo" << std::endl;
-        sprite.setPosition(next.x * 16 + 8, sprite.getPosition().y);
+        --index;
+        // sprite.setPosition(next.x * 16 + 8, sprite.getPosition().y);
     } else if (abs(direction.y) < cspeed && direction.y != 0) {
         std::cout << "hjkgrebfhjkgegbr" << std::endl;
-        sprite.setPosition(sprite.getPosition().x, next.y * 16 + 8);
+        --index;
+        // sprite.setPosition(sprite.getPosition().x, next.y * 16 + 8);
     }
     return true;
 }

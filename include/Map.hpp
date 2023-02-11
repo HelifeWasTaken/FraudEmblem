@@ -62,12 +62,12 @@ namespace emblem {
             return *this;
         }
 
-        uint8_t getCellType() const {
-            return __data & MASK_CELL_TYPE;
+        CellType getCellType() const {
+            return static_cast<CellType>(__data & MASK_CELL_TYPE);
         }
 
-        uint8_t getEntityType() const {
-            return (__data & MASK_CELL_ENTITY_TYPE) >> 4;
+        EntityType getEntityType() const {
+            return static_cast<EntityType>((__data & MASK_CELL_ENTITY_TYPE) >> 4);
         }
 
         private:

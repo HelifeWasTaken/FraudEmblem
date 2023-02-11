@@ -57,6 +57,9 @@ void emblem::BattleState::onLoad() {
 
     __cursorAnimator.play("idle");
 
+    createCharacter("assasin", Point(9, 8), emblem::EntityType::HERO);
+    createCharacter("assasin", Point(8, 9), emblem::EntityType::HERO);
+
     // trans.x = 11;
     // trans.y = 9;
 
@@ -88,6 +91,21 @@ void emblem::BattleState::onUpdate(const float &dt) {
             __emptyCell.clear();
             __characters.insert(std::make_pair(__selectedEnd, __characters.at(__selectedStart)));
             __characters.erase(__selectedStart);
+
+            __action = true;
+            __cursor = __selectedEnd;
+
+            int64_t x = __cursor.x;
+            int64_t y = __cursor.y;
+
+            x = std::clamp<int64_t>(x, 7, __mapData.getWidth() - 8);
+            y = std::clamp<int64_t>(y, 5, __mapData.getHeight() - 5);
+
+            emblem::Context::window().getView("default").setCenter(8 + x * 16, y * 16);
+
+            __cursorCell.setPosition(8 + __cursor.x * 16, 8 + __cursor.y * 16);
+
+            __generateAttackArea();
         }
     } else {
         for (auto [entity, sprite, transform] : pos.each()) {
@@ -123,9 +141,6 @@ void emblem::BattleState::onUpdate(const float &dt) {
 void emblem::BattleState::onEvent(sf::Event &e) {
     auto &win = emblem::Context::window();
 
-    int64_t x = __cursor.x;
-    int64_t y = __cursor.y;
-
     if (e.type == e.KeyPressed) {
         if (e.key.code == sf::Keyboard::Up) {
             if (__cursor.y > 0)
@@ -153,7 +168,25 @@ void emblem::BattleState::onEvent(sf::Event &e) {
         }
 
         if (e.key.code == sf::Keyboard::Enter) {
-            if (__selected) {
+            if (__action) {
+                if (__path.contains(std::make_pair(__cursor, CellType::ENTITY))) {
+                    auto &victim = __characters.at(__cursor);
+                    auto &victimStats = emblem::Context::entt().get<emblem::Stats>(victim);
+
+                    auto &stats = emblem::Context::entt().get<emblem::Stats>(__selectedEntity);
+
+                    victimStats.damage(std::clamp<size_t>(stats.atk - victimStats.def, 0, stats.atk));
+
+                    std::cout << "damage: " << std::clamp<size_t>(stats.atk - victimStats.def, 0, stats.atk) << std::endl;
+                    std::cout << victimStats << std::endl;
+
+                    if (!victimStats.isAlive()) {
+                        __characters.erase(__cursor);
+                        __mapData.getCell(__cursor.x, __cursor.y).setCellType(emblem::CellType::EMPTY);
+                        emblem::Context::entt().destroy(victim);
+                    }
+                }
+            } else if (__selected) {
                 auto &stats = emblem::Context::entt().get<emblem::Stats>(__selectedEntity);
 
                 __selectedEnd = __cursor;
@@ -170,7 +203,7 @@ void emblem::BattleState::onEvent(sf::Event &e) {
                 __pathManager = new emblem::PathManager(shortPath);
                 __selected = false;
             } else {
-                if (__mapData.getCell(__cursor.x, __cursor.y).getCellType() == CellType::ENTITY && __mapData.getCell(__cursor.x, __cursor.y).getEntityType() == EntityType::HERO) {
+                if (__mapData.getCell(__cursor.x, __cursor.y).getCellType() == CellType::ENTITY && __mapData.getCell(__cursor.x, __cursor.y).getEntityType() != EntityType::HERO) {
                     auto &entity = __characters.at(__cursor);
 
                     __selectedEntity = entity;
@@ -195,6 +228,9 @@ void emblem::BattleState::onEvent(sf::Event &e) {
             __path.clear();
             __selected = false;
         }
+
+        int64_t x = __cursor.x;
+        int64_t y = __cursor.y;
 
         x = std::clamp<int64_t>(x, 7, __mapData.getWidth() - 8);
         y = std::clamp<int64_t>(y, 5, __mapData.getHeight() - 5);
@@ -266,4 +302,35 @@ void emblem::BattleState::__generateArea() {
             __emptyCell.emplace_back(cell);
         }
     }
+}
+
+void emblem::BattleState::__generateAttackArea() {
+    auto &transform = emblem::Context::entt().get<emblem::Transform>(__selectedEntity);
+    auto &stats = emblem::Context::entt().get<emblem::Stats>(__selectedEntity);
+
+    if (__mapData.getCell(transform.x + 1, transform.y).getCellType() == CellType::EMPTY ||
+        (__mapData.getCell(transform.x + 1, transform.y).getCellType() == CellType::ENTITY &&
+         __mapData.getCell(transform.x + 1, transform.y).getEntityType() == EntityType::HERO))
+        __path.insert(std::make_pair<emblem::Point, emblem::CellType>({transform.x + 1, transform.y}, __mapData.getCell(transform.x + 1, transform.y).getCellType()));
+    if (__mapData.getCell(transform.x - 1, transform.y).getCellType() == CellType::EMPTY ||
+        (__mapData.getCell(transform.x - 1, transform.y).getCellType() == CellType::ENTITY &&
+         __mapData.getCell(transform.x - 1, transform.y).getEntityType() == EntityType::HERO))
+        __path.insert(std::make_pair<emblem::Point, emblem::CellType>({transform.x - 1, transform.y}, __mapData.getCell(transform.x - 1, transform.y).getCellType()));
+    if (__mapData.getCell(transform.x, transform.y + 1).getCellType() == CellType::EMPTY ||
+        (__mapData.getCell(transform.x, transform.y + 1).getCellType() == CellType::ENTITY &&
+         __mapData.getCell(transform.x, transform.y + 1).getEntityType() == EntityType::HERO))
+        __path.insert(std::make_pair<emblem::Point, emblem::CellType>({transform.x, transform.y + 1}, __mapData.getCell(transform.x, transform.y + 1).getCellType()));
+    if (__mapData.getCell(transform.x, transform.y - 1).getCellType() == CellType::EMPTY ||
+        (__mapData.getCell(transform.x, transform.y - 1).getCellType() == CellType::ENTITY &&
+         __mapData.getCell(transform.x, transform.y - 1).getEntityType() == EntityType::HERO))
+        __path.insert(std::make_pair<emblem::Point, emblem::CellType>({transform.x, transform.y - 1}, __mapData.getCell(transform.x, transform.y - 1).getCellType()));
+
+    for (auto &[transform, type] : __path) {
+        sf::RectangleShape *cell = new sf::RectangleShape(sf::Vector2f(15, 15));
+        cell->setTexture(emblem::Context::getResource<kat::Texture>("texture:misc/shading").raw_handle());
+        cell->setFillColor(sf::Color(255, 0, 127, 128));
+        cell->setPosition(transform.x * 16, transform.y * 16);
+        __emptyCell.emplace_back(cell);
+    }
+
 }

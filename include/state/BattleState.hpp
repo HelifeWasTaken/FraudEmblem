@@ -37,6 +37,9 @@ namespace emblem {
         bool __selected = false;
         Point __selectedStart;
         Point __selectedEnd;
+
+        bool __action = false;
+
         entt::entity __selectedEntity;
 
         float __elapsed = 0;
@@ -45,6 +48,8 @@ namespace emblem {
         emblem::PathManager *__pathManager = nullptr;
 
         void __generateArea();
+
+        void __generateAttackArea();
 
         public:
             BattleState(const std::filesystem::path &path);
