@@ -30,6 +30,9 @@ int main(void) {
 
     win.getView("default").setCenter(0, 0).setSize(240, 160);
 
+    win.registerView("fight",
+        emblem::View().setSize(239, 105).setCenter(239 / 2, 105 / 2), 1);
+
     emblem::Context::registerState<emblem::BattleState>("battle", "../assets/scene/battle_test.json");
     emblem::Context::load("battle");
 
