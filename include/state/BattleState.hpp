@@ -9,6 +9,7 @@
 
 #include <filesystem>
 
+#include "component/battle.hpp"
 #include "AState.hpp"
 #include "components/sprite.h"
 #include "component/Character.hpp"
@@ -61,6 +62,8 @@ namespace emblem {
 
         void __generateMoveArea();
         void __generateAttackArea();
+
+        FightScene *f = nullptr;
 
         public:
             BattleState(const std::filesystem::path &path);

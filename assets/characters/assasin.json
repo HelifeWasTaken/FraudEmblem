@@ -4,7 +4,7 @@
         "hp": 250,
         "atk": 10,
         "def": 5,
-        "lck": 0,
+        "lck": 20,
         "mov": 7
     },
     "animations": [

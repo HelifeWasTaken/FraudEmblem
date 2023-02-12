@@ -69,6 +69,17 @@ void emblem::BattleState::onLoad() {
 
     emblem::Context::window().getView("default").setCenter(8 + __cursorPos.x * 16, __cursorPos.y * 16);
 
+    auto &entt = Context::entt();
+
+    f = new FightScene(
+        entt.get<emblem::Stats>(__characters[Point(9, 8)]),
+        "boss",
+        entt.get<emblem::Stats>(__characters[Point(8, 9)]),
+        "boss",
+        "texture:map/battlebackgroung"
+    );
+
+
     auto &Gui = emblem::Context::guiHandler();
 
     auto menuItem = emblem::gui::MenuItem();
@@ -94,6 +105,12 @@ void emblem::BattleState::onRelease() {
 }
 
 void emblem::BattleState::onUpdate(const float &dt) {
+    if (f == nullptr)
+        goto fight_scene;
+    f->update(dt);
+    return;
+
+fight_scene:
     auto play = emblem::Context::entt().view<kat::Sprite, emblem::Play>();
     auto pos = emblem::Context::entt().view<kat::Sprite, emblem::Transform>();
     auto view = emblem::Context::entt().view<kat::Animator>();
@@ -284,6 +301,7 @@ void emblem::BattleState::onEvent(sf::Event &e) {
 }
 
 void emblem::BattleState::onRender(emblem::Window &window) {
+    /*
     window.draw(__map, "default", 0);
 
     auto view = emblem::Context::entt().view<kat::Sprite>();
@@ -297,6 +315,8 @@ void emblem::BattleState::onRender(emblem::Window &window) {
     for (auto [entity, sprite] : view.each()) {
         window.draw(sprite, "default", 128);
     }
+    */
+   f->draw(window);
 }
 
 void emblem::BattleState::createCharacter(const std::string &name, const Point &pos, const emblem::EntityType &type) {

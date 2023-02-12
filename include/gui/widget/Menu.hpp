@@ -15,7 +15,7 @@
 
 #include "gui/widget/MenuItem.hpp"
 
-#include "sprite.h"
+#include "components/sprite.h"
 
 namespace emblem::gui {
 
