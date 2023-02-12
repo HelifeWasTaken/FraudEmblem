@@ -16,6 +16,10 @@
 #include "item/Weapon.hpp"
 #include "item/Accessory.hpp"
 
+#include "gui/GuiHandler.hpp"
+#include "gui/widget/Menu.hpp"
+#include "gui/widget/MenuItem.hpp"
+
 emblem::BattleState::BattleState(const std::filesystem::path &path) : AState(),
 __mapData(0, 0),
 __cursorAnimator(__cursorCell) {
@@ -64,6 +68,23 @@ void emblem::BattleState::onLoad() {
     createCharacter("assasin", Point(8, 9), emblem::EntityType::HERO);
 
     emblem::Context::window().getView("default").setCenter(8 + __cursorPos.x * 16, __cursorPos.y * 16);
+
+    auto &Gui = emblem::Context::guiHandler();
+
+    auto menuItem = emblem::gui::MenuItem();
+    menuItem.setText("1");
+    auto menuItem2 = emblem::gui::MenuItem();
+    menuItem2.setText("2");
+    auto menuItem3 = emblem::gui::MenuItem();
+    menuItem3.setText("3");
+    auto menu = new emblem::gui::Menu();
+    menu->addItem(menuItem);
+    menu->addItem(menuItem2);
+    menu->addItem(menuItem3);
+
+    Gui.newGui("test");
+
+    Gui.getGui("test").addWidget(menu);
 }
 
 void emblem::BattleState::onRelease() {
@@ -177,6 +198,10 @@ void emblem::BattleState::onEvent(sf::Event &e) {
                 ++__cursorPos.x;
             if ((__state == MOVE || __state == ATTACK) && (__area.find(__cursorPos) == __area.end()))
                 --__cursorPos.x;
+        }
+
+        if (e.key.code == sf::Keyboard::M) {
+            Context::guiHandler().open("test");
         }
 
         if (e.key.code == sf::Keyboard::Enter) {
