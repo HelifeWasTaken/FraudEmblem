@@ -10,7 +10,9 @@
 #include "Context.hpp"
 
 // DO NOT TOUCH THIS >:c
-emblem::Context::Context() : __window({940, 640}, "Fraud Emblem", kat::WindowStyle::Close) {}
+emblem::Context::Context() : __window({940, 640}, "Fraud Emblem", kat::WindowStyle::Close) {
+    
+}
 
 emblem::Context &emblem::Context::instance() {
     if (!__instance)
@@ -30,6 +32,14 @@ kat::ResourceManager &emblem::Context::resources() {
     return instance().__resources;
 }
 
+sf::Font &emblem::Context::font() {
+    return instance().__font;
+}
+
+emblem::GuiHandler &emblem::Context::guiHandler() {
+    return instance().__guiHandler;
+}
+
 std::filesystem::path &emblem::Context::assetsPath() {
     return instance().__assetsPath;
 }
@@ -37,10 +47,14 @@ std::filesystem::path &emblem::Context::assetsPath() {
 void emblem::Context::loadResources() {
     auto &resources = emblem::Context::resources();
     auto &assetsPath = emblem::Context::assetsPath();
+    auto &font = emblem::Context::font();
 
     _loadTextures(assetsPath / "textures");
 
     emblem::CharacterFactory::loadCharacters(assetsPath / "characters");
+
+    if (!font.loadFromFile(assetsPath / "font/kek.ttf"))
+        throw std::runtime_error("Failed to load font");
 }
 
 emblem::MenuState &emblem::Context::menuState() {
@@ -58,12 +72,14 @@ void emblem::Context::load(const std::string &name) {
 
 void emblem::Context::update() {
     auto &stateMachine = emblem::Context::stateMachine();
+    auto &guiHandler = emblem::Context::guiHandler();
 
     if (window().isOpen()) {
         while (window().poll(instance().___event))
             event();
         instance().___event.type = sf::Event::Count;
         stateMachine.update(instance().__clock.getElapsedTime().asSeconds());
+        guiHandler.update(instance().__clock.getElapsedTime().asSeconds());
         instance().__clock.restart();
         emblem::Context::stateMachine().ping();
     }
@@ -71,16 +87,21 @@ void emblem::Context::update() {
 
 void emblem::Context::event() {
     auto &stateMachine = emblem::Context::stateMachine();
-    if (instance().___event.type == sf::Event::Closed)
-        window().close();
-    else
-        stateMachine.event(instance().___event);
+    auto &guiHandler = emblem::Context::guiHandler();
 
+    if (instance().___event.type == sf::Event::Closed) {
+        window().close();
+    } else {
+        guiHandler.event(instance().___event);
+        if (!guiHandler.doGrabEvent())
+            stateMachine.event(instance().___event);
+    }
 }
 
 void emblem::Context::render() {
     auto &stateMachine = emblem::Context::stateMachine();
     stateMachine.render();
+    guiHandler().render(window());
 }
 
 void emblem::Context::_loadTextures(const std::filesystem::path &path) {

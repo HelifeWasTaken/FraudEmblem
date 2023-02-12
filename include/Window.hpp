@@ -8,7 +8,7 @@
 #pragma once
 
 #include <unordered_set>
-#include <unordered_map>
+#include <map>
 
 #include "batch.h"
 #include "View.hpp"
@@ -21,7 +21,7 @@ namespace emblem {
     class Window {
         kat::Window __handle;
 
-        std::unordered_map<kat::ZAxis, std::pair<std::string, ViewRender>> __views;
+        std::map<kat::ZAxis, std::pair<std::string, ViewRender>> __views;
         // std::vector<std::tuple<kat::ZAxis, std::string, ViewRender>> __views;
 
         public:
@@ -67,6 +67,13 @@ namespace emblem {
             }
 
             Window& draw(const kat::shared_drawable_t &drawable, const std::string &view = "default", kat::ZAxis z = 0) {
+                auto &viewRender = getViewRender(view);
+
+                viewRender.second.add(drawable, z);
+                return *this;
+            }
+
+            Window &draw(const kat::low_drawable_t &drawable, const std::string &view = "default", kat::ZAxis z = 0) {
                 auto &viewRender = getViewRender(view);
 
                 viewRender.second.add(drawable, z);

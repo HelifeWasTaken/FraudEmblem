@@ -16,6 +16,7 @@
 #include "state/Machine.hpp"
 #include "state/MenuState.hpp"
 #include "component/Character.hpp"
+#include "gui/GuiHandler.hpp"
 
 namespace emblem {
     class Context {
@@ -24,11 +25,14 @@ namespace emblem {
         kat::ResourceManager __resources;
         StateMachine __stateMachine;
         MenuState __menuState; // defining the menu state private attribute
+        GuiHandler __guiHandler;
 
         std::filesystem::path __assetsPath = "../assets";
 
         sf::Event ___event;
         sf::Clock __clock;
+
+        sf::Font __font;
 
         static Context *__instance;
 
@@ -45,6 +49,8 @@ namespace emblem {
             static entt::registry &entt();
             static Window &window();
             static kat::ResourceManager &resources();
+            static sf::Font &font();
+            static GuiHandler &guiHandler();
 
             static std::filesystem::path &assetsPath();
             static void loadResources();

@@ -11,21 +11,29 @@
 
 emblem::Window::Window(kat::WindowHandle handle, const kat::ContextSettings& settings) : __handle(handle, settings) {
     registerView("default", __handle.get_handle().getDefaultView());
+    registerView("gui", __handle.get_handle().getDefaultView(), 1);
+    registerView("font", __handle.get_handle().getDefaultView(), 2);
 }
 
 emblem::Window::Window(kat::VideoMode mode, const std::string& title, kat::WindowStyle style, const kat::ContextSettings& settings) : __handle(mode, title, style, settings) {
     registerView("default", __handle.get_handle().getDefaultView());
+    registerView("gui", __handle.get_handle().getDefaultView(), 1);
+    registerView("font", __handle.get_handle().getDefaultView(), 2);
 }
 
 emblem::Window& emblem::Window::create(kat::WindowHandle handle, const kat::ContextSettings& settings) {
     __handle.create(handle, settings);
     registerView("default", __handle.get_handle().getDefaultView());
+    registerView("gui", __handle.get_handle().getDefaultView(), 1);
+    registerView("font", __handle.get_handle().getDefaultView(), 2);
     return *this;
 }
 
 emblem::Window& emblem::Window::create(kat::VideoMode mode, const std::string& title, kat::WindowStyle style, const kat::ContextSettings& settings) {
     __handle.create(mode, title, style, settings);
     registerView("default", __handle.get_handle().getDefaultView());
+    registerView("gui", __handle.get_handle().getDefaultView(), 1);
+    registerView("font", __handle.get_handle().getDefaultView(), 2);
     return *this;
 }
 
@@ -62,7 +70,7 @@ emblem::Window &emblem::Window::clear() {
 
 emblem::Window &emblem::Window::render() {
     clear();
-    for (auto &[_, pair] : __views) {
+    for (auto &[z, pair] : __views) {
         __handle.get_handle().setView(pair.second.first.get_handle());
         pair.second.second.draw(__handle);
     }
