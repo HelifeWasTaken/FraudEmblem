@@ -7,6 +7,7 @@
 
 #pragma once
 
+#include <unordered_set>
 #include <unordered_map>
 
 #include "batch.h"
@@ -20,7 +21,8 @@ namespace emblem {
     class Window {
         kat::Window __handle;
 
-        std::vector<std::tuple<kat::ZAxis, std::string, ViewRender>> __views;
+        std::unordered_map<kat::ZAxis, std::pair<std::string, ViewRender>> __views;
+        // std::vector<std::tuple<kat::ZAxis, std::string, ViewRender>> __views;
 
         public:
             ~Window() = default;

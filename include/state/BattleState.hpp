@@ -18,27 +18,39 @@ namespace emblem {
 
     class BattleState : public AState {
 
+        enum State {
+            SELECT,
+            MOVE,
+            ACTION,
+            ATTACK
+        };
+
+        enum Turn {
+            PLAYER,
+            ENEMY
+        };
+
+        State __state = SELECT;
+        Turn __turn = PLAYER;
+
         std::unordered_map<Point, entt::entity> __characters;
 
         kat::Sprite __map;
 
         kat::Sprite __cursorCell;
         kat::Animator __cursorAnimator;
-        std::vector<kat::shared_drawable_t> __emptyCell;
-        std::vector<kat::shared_drawable_t> __wallCell;
+        Point __cursorPos;
 
         Map __mapData;
 
+        std::vector<kat::shared_drawable_t> __cells;
+
         std::filesystem::path __assetsPath = "../assets";
 
-        Point __cursor;
-        Area __path;
+        Area __area;
 
-        bool __selected = false;
         Point __selectedStart;
         Point __selectedEnd;
-
-        bool __action = false;
 
         entt::entity __selectedEntity;
 
@@ -47,8 +59,7 @@ namespace emblem {
 
         emblem::PathManager *__pathManager = nullptr;
 
-        void __generateArea();
-
+        void __generateMoveArea();
         void __generateAttackArea();
 
         public:
