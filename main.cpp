@@ -15,6 +15,7 @@
 // #include "Dialog.hpp"
 
 int main(void) {
+    std::srand(std::time(nullptr));
     emblem::Context::loadResources();
 
     // emblem::CharacterFactory::loadCharacters("../assets/characters/");

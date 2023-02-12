@@ -25,6 +25,10 @@ private:
     kat::Sprite background;
     sf::Vector2f background_position = sf::Vector2f(0, 0);
 
+    kat::Sprite miss_sprite;
+    kat::Animator *miss_animator;
+    bool miss_playing = false;
+
     enum {
         LEFT_FIGHTING,
         RIGHT_FIGHTING,
@@ -138,7 +142,17 @@ public:
         }
         this->background.setPosition(background_position.x, -500);
 
-        this->right->max_fights = 5;
+        this->miss_sprite.create(emblem::Context::getResource<kat::Texture>("texture:map/miss"));
+        miss_animator = new kat::Animator(miss_sprite);
+
+        miss_animator->addAnimationSpritesheet(
+            "miss",
+            {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12},
+            kat::FrameSize(242, 162),
+            0.05,
+            false
+        );
+        miss_sprite.setPosition(-10, -10);
     }
 
     ~FightScene()
@@ -152,6 +166,7 @@ public:
     {
         left->animator->update(dt);
         right->animator->update(dt);
+        miss_animator->update(dt);
 
         if (!ready) {
             if (left->sprite.getPosition().y < left->target_position.y) {
@@ -170,6 +185,12 @@ public:
             } else {
                 return true;
             }
+        }
+
+        if (miss_playing) {
+            if (miss_animator->isPlaying() == false)
+                miss_playing = false;
+            return true;
         }
 
         if (fighting == NONE_FIGHTING) {
@@ -204,13 +225,27 @@ public:
             }
         } else if (fighting == LEFT_FIGHTING) {
             if (!left->animator->isPlaying()) {
-                right->stats.damage(left->stats.atk);
+                int ran_val = std::rand() % 100;
+                if (ran_val <= right->stats.lck) {
+                    miss_animator->playAnimation("miss");
+                    miss_playing = true;
+                } else {
+                    right->stats.damage(left->stats.atk);
+                }
                 left->fought_count++;
                 fighting = NONE_FIGHTING;
                 lturn = false;
             }
         } else if (fighting == RIGHT_FIGHTING) {
             if (!right->animator->isPlaying()) {
+                int ran_val = std::rand() % 100;
+                std::cout << ran_val << " vs " << left->stats.lck << std::endl;
+                if (ran_val <= left->stats.lck) {
+                    miss_animator->playAnimation("miss");
+                    miss_playing = true;
+                } else {
+                    left->stats.damage(left->stats.atk);
+                }
                 left->stats.damage(right->stats.atk);
                 right->fought_count++;
                 fighting = NONE_FIGHTING;
@@ -231,5 +266,7 @@ public:
         w.draw(background, "fight");
         w.draw(left->sprite, "fight");
         w.draw(right->sprite, "fight");
+        if (miss_playing)
+            w.draw(miss_sprite, "fight");
     }
 };
