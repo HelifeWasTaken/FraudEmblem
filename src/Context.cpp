@@ -42,6 +42,10 @@ void emblem::Context::loadResources() {
     emblem::CharacterFactory::loadCharacters(assetsPath / "characters");
 }
 
+emblem::MenuState &emblem::Context::menuState() {
+    return instance().__menuState;
+}
+
 emblem::StateMachine &emblem::Context::stateMachine() {
     return instance().__stateMachine;
 }
@@ -60,6 +64,7 @@ void emblem::Context::update() {
         instance().___event.type = sf::Event::Count;
         stateMachine.update(instance().__clock.getElapsedTime().asSeconds());
         instance().__clock.restart();
+        emblem::Context::stateMachine().ping();
     }
 }
 
@@ -69,6 +74,7 @@ void emblem::Context::event() {
         window().close();
     else
         stateMachine.event(instance().___event);
+
 }
 
 void emblem::Context::render() {

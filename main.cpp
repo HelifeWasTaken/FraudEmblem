@@ -12,6 +12,7 @@
 #include "component/Character.hpp"
 #include "resource.h"
 #include "state/BattleState.hpp"
+#include "state/MenuState.hpp"
 // #include "Dialog.hpp"
 
 int main(void) {
@@ -29,9 +30,13 @@ int main(void) {
     auto &win = emblem::Context::window();
 
     win.getView("default").setCenter(0, 0).setSize(240, 160);
+    win.registerView("mainmenu", win.get_handle().get_handle().getDefaultView(), 3);
+
+    emblem::Context::registerState<emblem::MenuState>("menu");
+    emblem::Context::load("menu");
 
     emblem::Context::registerState<emblem::BattleState>("battle", "../assets/scene/battle_test.json");
-    emblem::Context::load("battle");
+    // emblem::Context::load("battle");
 
     while (win.isOpen()) {
         emblem::Context::update();

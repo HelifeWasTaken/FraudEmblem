@@ -14,6 +14,7 @@
 #include "Window.hpp"
 #include "resource.h"
 #include "state/Machine.hpp"
+#include "state/MenuState.hpp"
 #include "component/Character.hpp"
 
 namespace emblem {
@@ -22,6 +23,7 @@ namespace emblem {
         Window __window;
         kat::ResourceManager __resources;
         StateMachine __stateMachine;
+        MenuState __menuState; // defining the menu state private attribute
 
         std::filesystem::path __assetsPath = "../assets";
 
@@ -53,6 +55,7 @@ namespace emblem {
             }
 
             static StateMachine &stateMachine();
+            static MenuState &menuState();
 
             template<typename T, typename... Args>
             static Context &registerState(const std::string &name, Args &&... args) {

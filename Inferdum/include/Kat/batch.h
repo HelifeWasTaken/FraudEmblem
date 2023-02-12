@@ -100,7 +100,7 @@ namespace kat {
         }
 
         /**
-         * @brief Constructs a new Batch Renderer object.
+         * @brief Constructs a new std::cout << " AAAAAAAAAAAAAAAAAa" << std::endl;Batch Renderer object.
          */
         BatchRenderer() = default;
 
