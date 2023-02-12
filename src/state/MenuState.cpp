@@ -46,6 +46,8 @@ namespace emblem {
         } else {
             __title->move(0.5, 0);
         }
+        if (pos.x > 1500)
+            emblem::Context::load("battle");
     }
     void MenuState::onEvent(sf::Event &e) {
         if (e.type == sf::Event::KeyPressed) {

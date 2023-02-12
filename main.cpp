@@ -16,6 +16,7 @@
 // #include "Dialog.hpp"
 
 int main(void) {
+    std::srand(std::time(nullptr));
     emblem::Context::loadResources();
 
     // emblem::CharacterFactory::loadCharacters("../assets/characters/");
@@ -34,6 +35,9 @@ int main(void) {
 
     emblem::Context::registerState<emblem::MenuState>("menu");
     emblem::Context::load("menu");
+
+    win.registerView("fight",
+        emblem::View().setSize(239, 105).setCenter(239 / 2, 105 / 2), 1);
 
     emblem::Context::registerState<emblem::BattleState>("battle", "../assets/scene/battle_test.json");
     // emblem::Context::load("battle");

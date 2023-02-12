@@ -34,7 +34,6 @@ namespace emblem {
 
             size_t lvl;
 
-
             void heal(size_t amount);
             void damage(size_t amount);
 

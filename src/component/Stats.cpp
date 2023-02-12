@@ -28,6 +28,10 @@ void emblem::Stats::heal(size_t amount) {
 }
 
 void emblem::Stats::damage(size_t amount) {
+    if (def > amount)
+        amount = 0;
+    else
+        amount -= def;
     hp = std::clamp<size_t>(hp - amount, 0, hpMax);
 }
 

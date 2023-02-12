@@ -9,7 +9,8 @@
 
 #include "Context.hpp"
 
-emblem::Context::Context() : __window({800, 600}, "Fraud Emblem", kat::WindowStyle::Close) {}
+// DO NOT TOUCH THIS >:c
+emblem::Context::Context() : __window({940, 640}, "Fraud Emblem", kat::WindowStyle::Close) {}
 
 emblem::Context &emblem::Context::instance() {
     if (!__instance)

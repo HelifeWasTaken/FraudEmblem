@@ -12,12 +12,13 @@
 #include <climits>
 #include <cmath>
 #include <vector>
-#include <unordered_set>
+#include <unordered_map>
+#include <algorithm>
 
 namespace emblem {
     struct Point {
-        size_t x = 0;
-        size_t y = 0;
+        int64_t x = 0;
+        int64_t y = 0;
 
         bool operator==(const Point &other) const {
             return x == other.x && y == other.y;
@@ -31,6 +32,7 @@ namespace emblem {
     static const size_t EXCLUDE_MASK_CELL_ENTITY_TYPE = ~MASK_CELL_ENTITY_TYPE;
 
     enum CellType {
+        IGNORE = -1,
         EMPTY,
         WALL,
         INTERACT,
@@ -40,6 +42,7 @@ namespace emblem {
     enum EntityType {
         HERO,
         VILLAIN,
+        NEUTRAL
     };
 
     struct Cell {
@@ -56,24 +59,28 @@ namespace emblem {
         }
 
         Cell &setEntityType(uint8_t type) {
-            __data &= EXCLUDE_MASK_CELL_TYPE;
+            __data &= EXCLUDE_MASK_CELL_ENTITY_TYPE;
             __data |= (type & 0xf) << 4;
             return *this;
         }
 
-        uint8_t getCellType() const {
-            return __data & MASK_CELL_TYPE;
+        CellType getCellType() const {
+            return static_cast<CellType>(__data & MASK_CELL_TYPE);
         }
 
-        uint8_t getEntityType() const {
-            return (__data & MASK_CELL_ENTITY_TYPE) >> 4;
+        EntityType getEntityType() const {
+            return static_cast<EntityType>((__data & MASK_CELL_ENTITY_TYPE) >> 4);
+        }
+
+        bool operator==(const Cell &other) const {
+            return __data == other.__data;
         }
 
         private:
             size_t __data = 0;
     };
 
-    using Area = std::unordered_set<std::pair<Point, CellType>>;
+    using Area = std::unordered_map<Point, CellType>;
     using Path = std::vector<Point>;
 
     class Map {
@@ -81,6 +88,10 @@ namespace emblem {
         size_t __height;
 
         std::vector<std::vector<Cell>> __map;
+
+        bool __excludeWall = false;
+        Point __origin;
+        Cell __ignore;
 
         public:
             Map(const size_t &width, const size_t &height);
@@ -98,6 +109,12 @@ namespace emblem {
 
             bool isHero(const size_t &x, const size_t &y) const;
             bool isVillain(const size_t &x, const size_t &y) const;
+            bool isNeutral(const size_t &x, const size_t &y) const;
+            bool isIgnore(const size_t &x, const size_t &y) const;
+
+            Map &setIgnore(const Cell &cell);
+
+            Map &excludeWall(bool exclude);
 
             Cell &getCell(const size_t &x, const size_t &y);
             const Cell &getCell(const size_t &x, const size_t &y) const;
@@ -105,7 +122,7 @@ namespace emblem {
             const size_t &getWidth() const;
             const size_t &getHeight() const;
 
-            Area getAviablePaths(const size_t &x, const size_t &y, const size_t &maxStep);
+            Area getAvailablePaths(const size_t &x, const size_t &y, const size_t &maxStep);
 
             Path findPath(const size_t &x, const size_t &y, const size_t &target_x, const size_t &target_y);
 
@@ -117,11 +134,20 @@ namespace emblem {
                 const int64_t &maxStep
             );
     };
+
+    Area pathToArea(const Path &path);
 }
 
 template<>
 struct std::hash<std::pair<emblem::Point, emblem::CellType>> {
     size_t operator()(const std::pair<emblem::Point, emblem::CellType> &pair) const {
-        return std::hash<size_t>()(pair.first.x) ^ std::hash<size_t>()(pair.first.y) ^ std::hash<size_t>()(pair.second);
+        return std::hash<size_t>()(pair.first.x) ^ std::hash<size_t>()(pair.first.y);
+    }
+};
+
+template<>
+struct std::hash<emblem::Point> {
+    size_t operator()(const emblem::Point &point) const {
+        return std::hash<size_t>()(point.x) ^ std::hash<size_t>()(point.y);
     }
 };

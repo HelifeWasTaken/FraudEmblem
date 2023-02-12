@@ -21,12 +21,23 @@
 #include "Context.hpp"
 #include "component/Stats.hpp"
 #include "component/Transform.hpp"
+#include "component/Inventory.hpp"
+#include "component/Equipment.hpp"
+#include "component/Play.hpp"
 
 #include "Map.hpp"
 
 namespace emblem {
 
     entt::entity createCharacter(const nlohmann::json &json);
+
+    Stats &getStats(entt::entity &entity);
+    Transform &getTransform(entt::entity &entity);
+    Inventory &getInventory(entt::entity &entity);
+    Equipment &getEquipment(entt::entity &entity);
+
+    void equipWeapon(entt::entity &entity, const size_t &index);
+    void equipAccessory(entt::entity &entity, const size_t &index);
 
     class CharacterFactory {
         std::unordered_map<std::string, nlohmann::json> __characters;
@@ -47,13 +58,16 @@ namespace emblem {
     };
 
     class PathManager {
-        size_t index = 0;
+        size_t index;
         emblem::Path path;
 
-        static constexpr float SPEED = 4;
+        float time = 0;
+
+        static constexpr float SPEED = 5;
 
     public:
-        PathManager(const emblem::Path& path) : path(path) {}
+        PathManager(const emblem::Path& path) : path(path)
+         , index(path.size() - 1) {}
 
         bool update(entt::entity &entity, float dt);
     };

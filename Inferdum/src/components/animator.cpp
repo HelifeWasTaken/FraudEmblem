@@ -143,7 +143,7 @@ namespace kat {
         FrameList all_possible_frames;
 
         for (FrameIndex y = 0; y < texture_size.y; y += frame_size.y) {
-            for (FrameIndex x = 0; x < texture_size.x; x += frame_size.x) {
+            for (FrameIndex x = 0; x + frame_size.x < texture_size.x; x += frame_size.x) {
                 all_possible_frames.push_back(Frame(x, y, (int)frame_size.x, (int)frame_size.y));
             }
         }
@@ -185,5 +185,10 @@ namespace kat {
 
     bool Animator::isFlippedY() const {
         return m_sprite.isFlippedY();
+    }
+
+    void Animator::reloadSprite(Sprite& sprite) {
+        m_sprite = std::move(kat::Sprite(sprite));
+        _defaultAnimation();
     }
 }

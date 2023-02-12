@@ -32,10 +32,24 @@
     0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
     "enemies": [
         {
-            "name": "map_assasin",
+            "name": "assasin",
             "position": {
-                "x": 0,
-                "y": 0
+                "x": 11,
+                "y": 9
+            }
+        },
+        {
+            "name": "assasin",
+            "position": {
+                "x": 16,
+                "y": 6
+            }
+        },
+        {
+            "name": "assasin",
+            "position": {
+                "x": 16,
+                "y": 15
             }
         }
     ]

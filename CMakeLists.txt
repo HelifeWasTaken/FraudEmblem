@@ -12,6 +12,9 @@ file(
     src/*.cpp
     src/component/*.cpp
     src/state/*.cpp
+    src/item/*.cpp
+    src/gui/*.cpp
+    src/gui/widget/*.cpp
     main.cpp
 
     include/*.hpp
