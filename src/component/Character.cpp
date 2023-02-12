@@ -6,6 +6,8 @@
 */
 
 #include "component/Character.hpp"
+#include "item/Weapon.hpp"
+#include "item/Accessory.hpp"
 
 entt::entity emblem::createCharacter(const nlohmann::json &json) {
     auto &registry = emblem::Context::entt();
@@ -32,6 +34,10 @@ entt::entity emblem::createCharacter(const nlohmann::json &json) {
 
     registry.emplace<emblem::Transform>(entity);
     auto &transform = registry.get<emblem::Transform>(entity);
+
+    registry.emplace<emblem::Inventory>(entity);
+    registry.emplace<emblem::Equipment>(entity);
+    registry.emplace<emblem::Play>(entity);
 
     sprite.setOrigin(16, 16);
     sprite.setPosition(8 + transform.x * 16, 8 + transform.y * 16);
@@ -73,6 +79,66 @@ entt::entity emblem::createCharacter(const nlohmann::json &json) {
     animator.playAnimation("idle");
 
     return entity;
+}
+
+emblem::Stats &emblem::getStats(entt::entity &entity) {
+    auto &registry = emblem::Context::entt();
+
+    return registry.get<emblem::Stats>(entity);
+}
+
+emblem::Transform &emblem::getTransform(entt::entity &entity) {
+    auto &registry = emblem::Context::entt();
+
+    return registry.get<emblem::Transform>(entity);
+}
+
+emblem::Inventory &emblem::getInventory(entt::entity &entity) {
+    auto &registry = emblem::Context::entt();
+
+    return registry.get<emblem::Inventory>(entity);
+}
+
+emblem::Equipment &emblem::getEquipment(entt::entity &entity) {
+    auto &registry = emblem::Context::entt();
+
+    return registry.get<emblem::Equipment>(entity);
+}
+
+void emblem::equipWeapon(entt::entity &entity, const size_t &index) {
+    auto &registry = emblem::Context::entt();
+    auto &inventory = getInventory(entity);
+    auto &equipment = getEquipment(entity);
+
+    if (index >= inventory.size())
+        return;
+
+    Stack &item = inventory.getItemStack(index);
+
+    try {
+        dynamic_cast<const emblem::Weapon &>(item.item());
+        equipment.equipWeapon(item);
+    } catch (std::bad_cast &e) {
+        return;
+    }
+}
+
+void emblem::equipAccessory(entt::entity &entity, const size_t &index) {
+    auto &registry = emblem::Context::entt();
+    auto &inventory = getInventory(entity);
+    auto &equipment = getEquipment(entity);
+
+    if (index >= inventory.size())
+        return;
+
+    Stack &item = inventory.getItemStack(index);
+
+    try {
+        dynamic_cast<const emblem::Accessory &>(item.item());
+        equipment.equipAccessory(item);
+    } catch (std::bad_cast &e) {
+        return;
+    }
 }
 
 emblem::CharacterFactory &emblem::CharacterFactory::instance() {
@@ -127,48 +193,50 @@ bool emblem::PathManager::update(entt::entity &entity, float dt) {
         return false;
     }
 
-    auto current = sprite.getPosition();
-    current.x -= 8;
-    current.y -= 8;
-    current.x /= 16;
-    current.y /= 16;
     auto &next = path[index];
 
-    sf::Vector2f direction = { current.x - next.x, current.y - next.y };
-    auto cspeed = SPEED * dt * 10;
+    Point direction = { transform.x - next.x, transform.y - next.y };
 
+    float __lorp = 0.0f;
 
+    time = std::clamp(time + dt * SPEED, 0.0f, 1.0f);
 
-    std::cout << cspeed << std::endl;
-    std::cout << "current: " << current.x << ", " << current.y << std::endl;
-    std::cout << "direction: " << direction.x << ", " << direction.y << std::endl;
+    std::cout << "time: " << time << std::endl;
+    std::cout << "delta: " << dt << std::endl;
+    std::cout << "transform: " << transform.x << ", " << transform.y << std::endl;
     std::cout << "next: " << next.x << ", " << next.y << std::endl;
-    std::cout << "index: " << index << std::endl;
+    std::cout << "direction: " << direction.x << ", " << direction.y << std::endl;
 
-    if (direction.x == 0 && direction.y == 0) {
-        index--;
+    if (time >= 1.0f) {
+        time = 0.0f;
+        transform.x = next.x;
+        transform.y = next.y;
+        --index;
         return true;
-    } else if (direction.x >= cspeed) {
+    } else if (direction.x >= 1) {
         animator.play("walk_west");
-        sprite.move(-cspeed, 0);
-    } else if (direction.y >= cspeed) {
+        __lorp = std::lerp(transform.x * 16 + 8, next.x * 16 + 8, time);
+        sprite.setPosition(__lorp, transform.y * 16 + 8);
+    } else if (direction.y >= 1) {
         animator.play("walk_north");
-        sprite.move(0, -cspeed);
-    } else if (direction.x <= -cspeed) {
+        __lorp = std::lerp(transform.y * 16 + 8, next.y * 16 + 8, time);
+        sprite.setPosition(transform.x * 16 + 8, __lorp);
+    } else if (direction.x <= -1) {
         animator.play("walk_east");
-        sprite.move(cspeed, 0);
-    } else if (direction.y <= -cspeed) {
-        std::cout << "kek" << std::endl;
+        __lorp = std::lerp(transform.x * 16 + 8, next.x * 16 + 8, time);
+        sprite.setPosition(__lorp, transform.y * 16 + 8);
+    } else if (direction.y <= -1) {
         animator.play("walk_south");
-        sprite.move(0, cspeed);
-    } else if (abs(direction.x) < cspeed && direction.x != 0) {
-        std::cout << "bamboo" << std::endl;
-        --index;
-        // sprite.setPosition(next.x * 16 + 8, sprite.getPosition().y);
-    } else if (abs(direction.y) < cspeed && direction.y != 0) {
-        std::cout << "hjkgrebfhjkgegbr" << std::endl;
-        --index;
-        // sprite.setPosition(sprite.getPosition().x, next.y * 16 + 8);
+        __lorp = std::lerp(transform.y * 16 + 8, next.y * 16 + 8, time);
+        sprite.setPosition(transform.x * 16 + 8, __lorp);
     }
+    //     sprite.move(0, cspeed);
+    // } else if (abs(direction.x) < cspeed && direction.x != 0) {
+    //     --index;
+    //     // sprite.setPosition(next.x * 16 + 8, sprite.getPosition().y);
+    // } else if (abs(direction.y) < cspeed && direction.y != 0) {
+    //     --index;
+    //     // sprite.setPosition(sprite.getPosition().x, next.y * 16 + 8);
+    // }
     return true;
 }

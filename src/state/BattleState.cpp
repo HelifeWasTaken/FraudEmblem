@@ -13,6 +13,9 @@
 #include "state/Machine.hpp"
 #include "Context.hpp"
 
+#include "item/Weapon.hpp"
+#include "item/Accessory.hpp"
+
 emblem::BattleState::BattleState(const std::filesystem::path &path) : AState(),
 __mapData(0, 0),
 __cursorAnimator(__cursorCell) {
@@ -44,11 +47,11 @@ __cursorAnimator(__cursorCell) {
 void emblem::BattleState::onLoad() {
     std::cout << "Loading Battle State" << std::endl;
 
-    __cursor.x = 7;
-    __cursor.y = 5;
+    __cursorPos.x = 7;
+    __cursorPos.y = 5;
 
     __cursorCell.create(emblem::Context::getResource<kat::Texture>("texture:misc/cursor"));
-    __cursorCell.setPosition(8 + __cursor.x * 16, 8 + __cursor.y * 16);
+    __cursorCell.setPosition(8 + __cursorPos.x * 16, 8 + __cursorPos.y * 16);
 
     __cursorCell.setOrigin(12, 12);
 
@@ -60,13 +63,7 @@ void emblem::BattleState::onLoad() {
     createCharacter("assasin", Point(9, 8), emblem::EntityType::HERO);
     createCharacter("assasin", Point(8, 9), emblem::EntityType::HERO);
 
-    // trans.x = 11;
-    // trans.y = 9;
-
-    // __mapData.getCell(11, 9).setCellType(emblem::CellType::ENTITY);
-    // __mapData.getCell(11, 9).setEntityType(emblem::EntityType::HERO);
-
-    emblem::Context::window().getView("default").setCenter(8 + __cursor.x * 16, __cursor.y * 16);
+    emblem::Context::window().getView("default").setCenter(8 + __cursorPos.x * 16, __cursorPos.y * 16);
 }
 
 void emblem::BattleState::onRelease() {
@@ -76,6 +73,7 @@ void emblem::BattleState::onRelease() {
 }
 
 void emblem::BattleState::onUpdate(const float &dt) {
+    auto play = emblem::Context::entt().view<kat::Sprite, emblem::Play>();
     auto pos = emblem::Context::entt().view<kat::Sprite, emblem::Transform>();
     auto view = emblem::Context::entt().view<kat::Animator>();
 
@@ -83,27 +81,33 @@ void emblem::BattleState::onUpdate(const float &dt) {
         if (!__pathManager->update(__selectedEntity, dt)) {
             delete __pathManager;
             __pathManager = nullptr;
+
             __mapData.getCell(__selectedStart.x, __selectedStart.y).setCellType(emblem::CellType::EMPTY);
             __mapData.getCell(__selectedEnd.x, __selectedEnd.y).setCellType(emblem::CellType::ENTITY);
             __mapData.getCell(__selectedEnd.x, __selectedEnd.y).setEntityType(__mapData.getCell(__selectedStart.x, __selectedStart.y).getEntityType());
-            __path.clear();
-            __wallCell.clear();
-            __emptyCell.clear();
+
+            __area.clear();
+            __cells.clear();
+
             __characters.insert(std::make_pair(__selectedEnd, __characters.at(__selectedStart)));
             __characters.erase(__selectedStart);
 
-            __action = true;
-            __cursor = __selectedEnd;
+            __state = ATTACK;
+            // __state = SELECT;
+            __cursorPos = __selectedEnd;
 
-            int64_t x = __cursor.x;
-            int64_t y = __cursor.y;
+            int64_t x = __cursorPos.x;
+            int64_t y = __cursorPos.y;
 
             x = std::clamp<int64_t>(x, 7, __mapData.getWidth() - 8);
             y = std::clamp<int64_t>(y, 5, __mapData.getHeight() - 5);
 
             emblem::Context::window().getView("default").setCenter(8 + x * 16, y * 16);
 
-            __cursorCell.setPosition(8 + __cursor.x * 16, 8 + __cursor.y * 16);
+            __cursorCell.setPosition(8 + __cursorPos.x * 16, 8 + __cursorPos.y * 16);
+
+            // auto &play = emblem::Context::entt().get<emblem::Play>(__selectedEntity);
+            // play.canPlay = false;
 
             __generateAttackArea();
         }
@@ -117,13 +121,16 @@ void emblem::BattleState::onUpdate(const float &dt) {
         anim.update(dt);
     }
 
-    __cursorAnimator.update(dt);
-
-    for (auto &ptr : __wallCell) {
-        dynamic_cast<sf::RectangleShape*>(ptr.get())->setTextureRect(sf::IntRect(__shading, __shading, 15, 15));
+    for (auto [entity, sprite, play] : play.each()) {
+        if (play.canPlay)
+            sprite.setColor(sf::Color::White);
+        else
+            sprite.setColor(sf::Color(127, 127, 127));
     }
 
-    for (auto &ptr : __emptyCell) {
+    __cursorAnimator.update(dt);
+
+    for (auto &ptr : __cells) {
         dynamic_cast<sf::RectangleShape*>(ptr.get())->setTextureRect(sf::IntRect(__shading, __shading, 15, 15));
     }
 
@@ -143,34 +150,39 @@ void emblem::BattleState::onEvent(sf::Event &e) {
 
     if (e.type == e.KeyPressed) {
         if (e.key.code == sf::Keyboard::Up) {
-            if (__cursor.y > 0)
-                --__cursor.y;
-            if (__selected && !__path.contains(std::make_pair(__cursor, CellType::EMPTY)))
-                ++__cursor.y;
+            if (__cursorPos.y > 0)
+                --__cursorPos.y;
+            if ((__state == MOVE || __state == ATTACK) && (__area.find(__cursorPos) == __area.end()))
+                ++__cursorPos.y;
         }
         if (e.key.code == sf::Keyboard::Down) {
-            if (__cursor.y < __mapData.getHeight() - 1)
-                ++__cursor.y;
-            if (__selected && !__path.contains(std::make_pair(__cursor, CellType::EMPTY)))
-                --__cursor.y;
+            if (__cursorPos.y < __mapData.getHeight() - 1)
+                ++__cursorPos.y;
+            if ((__state == MOVE || __state == ATTACK) && (__area.find(__cursorPos) == __area.end()))
+                --__cursorPos.y;
         }
         if (e.key.code == sf::Keyboard::Left) {
-            if (__cursor.x > 0)
-                --__cursor.x;
-            if (__selected && !__path.contains(std::make_pair(__cursor, CellType::EMPTY)))
-                ++__cursor.x;
+            if (__cursorPos.x > 0)
+                --__cursorPos.x;
+            std::cout << __cursorPos.x << "x" << __cursorPos.y << std::endl;
+            std::cout << __area.size() << std::endl;
+            for (auto &[transform, _] : __area) {
+                std::cout << transform.x << "x" << transform.y << std::endl;
+            }
+            if ((__state == MOVE || __state == ATTACK) && (__area.find(__cursorPos) == __area.end()))
+                ++__cursorPos.x;
         }
         if (e.key.code == sf::Keyboard::Right) {
-            if (__cursor.x < __mapData.getWidth() - 1)
-                ++__cursor.x;
-            if (__selected && !__path.contains(std::make_pair(__cursor, CellType::EMPTY)))
-                --__cursor.x;
+            if (__cursorPos.x < __mapData.getWidth() - 1)
+                ++__cursorPos.x;
+            if ((__state == MOVE || __state == ATTACK) && (__area.find(__cursorPos) == __area.end()))
+                --__cursorPos.x;
         }
 
         if (e.key.code == sf::Keyboard::Enter) {
-            if (__action) {
-                if (__path.contains(std::make_pair(__cursor, CellType::ENTITY))) {
-                    auto &victim = __characters.at(__cursor);
+            if (__state == ATTACK) {
+                if (__area.at(__cursorPos) == CellType::ENTITY) {
+                    auto &victim = __characters.at(__cursorPos);
                     auto &victimStats = emblem::Context::entt().get<emblem::Stats>(victim);
 
                     auto &stats = emblem::Context::entt().get<emblem::Stats>(__selectedEntity);
@@ -181,63 +193,68 @@ void emblem::BattleState::onEvent(sf::Event &e) {
                     std::cout << victimStats << std::endl;
 
                     if (!victimStats.isAlive()) {
-                        __characters.erase(__cursor);
-                        __mapData.getCell(__cursor.x, __cursor.y).setCellType(emblem::CellType::EMPTY);
+                        __characters.erase(__cursorPos);
+                        __mapData.getCell(__cursorPos.x, __cursorPos.y).setCellType(emblem::CellType::EMPTY);
                         emblem::Context::entt().destroy(victim);
                     }
                 }
-            } else if (__selected) {
-                auto &stats = emblem::Context::entt().get<emblem::Stats>(__selectedEntity);
+            } else if (__state == MOVE) {
+                if (__mapData.isEmpty(__cursorPos.x, __cursorPos.y)) {
+                    auto &stats = emblem::Context::entt().get<emblem::Stats>(__selectedEntity);
 
-                __selectedEnd = __cursor;
-                auto shortPath = __mapData.findShortestPathTo(__selectedStart.x, __selectedStart.y, __selectedEnd.x, __selectedEnd.y, stats.mov);
+                    __selectedEnd = __cursorPos;
+                    auto shortPath = __mapData.excludeWall(false).findShortestPathTo(__selectedStart.x, __selectedStart.y, __selectedEnd.x, __selectedEnd.y, stats.mov);
 
-                __path = emblem::pathToArea(shortPath);
+                    __area = emblem::pathToArea(shortPath);
 
-                __wallCell.clear();
-                __emptyCell.clear();
+                    __cells.clear();
 
-                __generateArea();
-                if (__pathManager)
-                    delete __pathManager;
-                __pathManager = new emblem::PathManager(shortPath);
-                __selected = false;
+                    __generateMoveArea();
+                    if (__pathManager)
+                        delete __pathManager;
+                    __pathManager = new emblem::PathManager(shortPath);
+                }
             } else {
-                if (__mapData.getCell(__cursor.x, __cursor.y).getCellType() == CellType::ENTITY && __mapData.getCell(__cursor.x, __cursor.y).getEntityType() != EntityType::HERO) {
-                    auto &entity = __characters.at(__cursor);
+                if (__mapData.getCell(__cursorPos.x, __cursorPos.y).getCellType() == CellType::ENTITY && __mapData.getCell(__cursorPos.x, __cursorPos.y).getEntityType() != EntityType::HERO) {
+                    auto &entity = __characters.at(__cursorPos);
 
                     __selectedEntity = entity;
 
                     auto &stats = emblem::Context::entt().get<emblem::Stats>(__selectedEntity);
+                    auto &play = emblem::Context::entt().get<emblem::Play>(__selectedEntity);
 
-                    __path = __mapData.getAviablePaths(__cursor.x, __cursor.y, stats.mov);
+                    if (play.canPlay) {
+                        __mapData.setIgnore(__mapData.getCell(__cursorPos.x, __cursorPos.y));
+                        __area = __mapData.excludeWall(false).getAvailablePaths(__cursorPos.x, __cursorPos.y, stats.mov);
 
-                    __selected = true;
+                        __state = MOVE;
 
-                    __selectedStart = __cursor;
+                        __selectedStart = __cursorPos;
 
-                    __wallCell.clear();
-                    __emptyCell.clear();
+                        __cells.clear();
 
-                    __generateArea();
+                        __generateMoveArea();
+                    }
                 }
             }
         }
 
         if (e.key.code == sf::Keyboard::Escape) {
-            __path.clear();
-            __selected = false;
+            if (__state == MOVE) {
+                __area.clear();
+                __state = SELECT;
+            }
         }
 
-        int64_t x = __cursor.x;
-        int64_t y = __cursor.y;
+        int64_t x = __cursorPos.x;
+        int64_t y = __cursorPos.y;
 
         x = std::clamp<int64_t>(x, 7, __mapData.getWidth() - 8);
         y = std::clamp<int64_t>(y, 5, __mapData.getHeight() - 5);
 
         emblem::Context::window().getView("default").setCenter(8 + x * 16, y * 16);
 
-        __cursorCell.setPosition(8 + __cursor.x * 16, 8 + __cursor.y * 16);
+        __cursorCell.setPosition(8 + __cursorPos.x * 16, 8 + __cursorPos.y * 16);
     }
 }
 
@@ -246,11 +263,7 @@ void emblem::BattleState::onRender(emblem::Window &window) {
 
     auto view = emblem::Context::entt().view<kat::Sprite>();
 
-    for (auto &ptr : __wallCell) {
-        window.draw(ptr, "default", 64);
-    }
-
-    for (auto &ptr : __emptyCell) {
+    for (auto &ptr : __cells) {
         window.draw(ptr, "default", 64);
     }
 
@@ -286,51 +299,47 @@ void emblem::BattleState::createCharacter(const std::string &name, const Point &
     __entities.push_back(newbie);
 }
 
-void emblem::BattleState::__generateArea() {
-    if (!__wallCell.empty() && !__emptyCell.empty())
+void emblem::BattleState::__generateMoveArea() {
+    if (!__cells.empty())
         return;
-    for (auto &[pos, type] : __path) {
+    for (auto &[pos, type] : __area) {
         sf::RectangleShape *cell = new sf::RectangleShape(sf::Vector2f(15, 15));
         cell->setTexture(emblem::Context::getResource<kat::Texture>("texture:misc/shading").raw_handle());
         if (type == CellType::WALL) {
             cell->setFillColor(sf::Color(255, 0, 0, 128));
-            cell->setPosition(pos.x * 16, pos.y * 16);
-            __wallCell.emplace_back(cell);
+        } else if (type == CellType::IGNORE) {
+            cell->setFillColor(sf::Color(0, 0, 128, 128));
         } else {
             cell->setFillColor(sf::Color(0, 0, 255, 128));
-            cell->setPosition(pos.x * 16, pos.y * 16);
-            __emptyCell.emplace_back(cell);
         }
+        cell->setPosition(pos.x * 16, pos.y * 16);
+        __cells.emplace_back(cell);
     }
 }
 
 void emblem::BattleState::__generateAttackArea() {
     auto &transform = emblem::Context::entt().get<emblem::Transform>(__selectedEntity);
     auto &stats = emblem::Context::entt().get<emblem::Stats>(__selectedEntity);
+    auto &equipment = emblem::Context::entt().get<emblem::Equipment>(__selectedEntity);
 
-    if (__mapData.getCell(transform.x + 1, transform.y).getCellType() == CellType::EMPTY ||
-        (__mapData.getCell(transform.x + 1, transform.y).getCellType() == CellType::ENTITY &&
-         __mapData.getCell(transform.x + 1, transform.y).getEntityType() == EntityType::HERO))
-        __path.insert(std::make_pair<emblem::Point, emblem::CellType>({transform.x + 1, transform.y}, __mapData.getCell(transform.x + 1, transform.y).getCellType()));
-    if (__mapData.getCell(transform.x - 1, transform.y).getCellType() == CellType::EMPTY ||
-        (__mapData.getCell(transform.x - 1, transform.y).getCellType() == CellType::ENTITY &&
-         __mapData.getCell(transform.x - 1, transform.y).getEntityType() == EntityType::HERO))
-        __path.insert(std::make_pair<emblem::Point, emblem::CellType>({transform.x - 1, transform.y}, __mapData.getCell(transform.x - 1, transform.y).getCellType()));
-    if (__mapData.getCell(transform.x, transform.y + 1).getCellType() == CellType::EMPTY ||
-        (__mapData.getCell(transform.x, transform.y + 1).getCellType() == CellType::ENTITY &&
-         __mapData.getCell(transform.x, transform.y + 1).getEntityType() == EntityType::HERO))
-        __path.insert(std::make_pair<emblem::Point, emblem::CellType>({transform.x, transform.y + 1}, __mapData.getCell(transform.x, transform.y + 1).getCellType()));
-    if (__mapData.getCell(transform.x, transform.y - 1).getCellType() == CellType::EMPTY ||
-        (__mapData.getCell(transform.x, transform.y - 1).getCellType() == CellType::ENTITY &&
-         __mapData.getCell(transform.x, transform.y - 1).getEntityType() == EntityType::HERO))
-        __path.insert(std::make_pair<emblem::Point, emblem::CellType>({transform.x, transform.y - 1}, __mapData.getCell(transform.x, transform.y - 1).getCellType()));
+    if (equipment.weapon().isNull())
+        __area = __mapData.excludeWall(true).getAvailablePaths(transform.x, transform.y, 1);
+    else
+        __area = __mapData.excludeWall(true).getAvailablePaths(transform.x, transform.y, equipment.weapon().item<Weapon>().range());
+    __area.insert(std::make_pair<Point, CellType>({transform.x, transform.y}, emblem::CellType::IGNORE));
 
-    for (auto &[transform, type] : __path) {
+    for (auto &[transform, type] : __area) {
         sf::RectangleShape *cell = new sf::RectangleShape(sf::Vector2f(15, 15));
         cell->setTexture(emblem::Context::getResource<kat::Texture>("texture:misc/shading").raw_handle());
-        cell->setFillColor(sf::Color(255, 0, 127, 128));
+        if (type == IGNORE) {
+            cell->setFillColor(sf::Color(127, 0, 127, 128));
+        } else {
+            cell->setFillColor(sf::Color(255, 0, 127, 128));
+        }
         cell->setPosition(transform.x * 16, transform.y * 16);
-        __emptyCell.emplace_back(cell);
+        __cells.emplace_back(cell);
     }
+
+    __area.at({transform.x, transform.y}) = CellType::EMPTY;
 
 }

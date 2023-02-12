@@ -55,6 +55,24 @@ bool emblem::Map::isVillain(const size_t &x, const size_t &y) const {
     return __map.at(x).at(y).getEntityType() == VILLAIN;
 }
 
+bool emblem::Map::isNeutral(const size_t &x, const size_t &y) const {
+    return __map.at(x).at(y).getEntityType() == NEUTRAL;
+}
+
+bool emblem::Map::isIgnore(const size_t &x, const size_t &y) const {
+    return __map.at(x).at(y) == __ignore;
+}
+
+emblem::Map &emblem::Map::setIgnore(const Cell &cell) {
+    __ignore = cell;
+    return *this;
+}
+
+emblem::Map &emblem::Map::excludeWall(bool exclude) {
+    __excludeWall = exclude;
+    return *this;
+}
+
 emblem::Cell &emblem::Map::getCell(const size_t &x, const size_t &y) {
     return __map.at(x).at(y);
 }
@@ -72,7 +90,7 @@ const size_t &emblem::Map::getHeight() const {
 }
 
 // You cannot go through walls in diagonal directions and behind players
-emblem::Area emblem::Map::getAviablePaths(const size_t &x, const size_t &y, const size_t &maxStep) {
+emblem::Area emblem::Map::getAvailablePaths(const size_t &x, const size_t &y, const size_t &maxStep) {
     emblem::Area result;
 
     if (maxStep == 0) {
@@ -80,50 +98,55 @@ emblem::Area emblem::Map::getAviablePaths(const size_t &x, const size_t &y, cons
     }
 
     if (x > 0) {
-        if (isWall(x - 1, y) || isEntity(x - 1, y)) {
-            result.insert(std::make_pair<emblem::Point, emblem::CellType>({ x - 1, y }, WALL));
+        if (!isIgnore(x - 1, y) && (isWall(x - 1, y) || isEntity(x - 1, y))) {
+            if (!(isWall(x - 1, y) && __excludeWall))
+                result.insert(std::make_pair<emblem::Point, emblem::CellType>({ x - 1, y }, __excludeWall ? ENTITY : WALL));
         } else {
-            result.insert(std::make_pair<emblem::Point, emblem::CellType>({ x - 1, y }, EMPTY));
-            if (isEmpty(x - 1, y)) {
-                auto subResult = getAviablePaths(x - 1, y, maxStep - 1);
-                result.merge(subResult);
-            }
+            if (isIgnore(x - 1, y))
+                result.insert(std::make_pair<emblem::Point, emblem::CellType>({ x - 1, y }, IGNORE));
+            else
+                result.insert(std::make_pair<emblem::Point, emblem::CellType>({ x - 1, y }, EMPTY));
+            auto subResult = getAvailablePaths(x - 1, y, maxStep - 1);
+            result.merge(subResult);
         }
     }
 
     if (x < __width - 1) {
-        if (isWall(x + 1, y) || isEntity(x + 1, y)) {
-            result.insert(std::make_pair<emblem::Point, emblem::CellType>({ x + 1, y }, WALL));
+        if (!isIgnore(x + 1, y) && (isWall(x + 1, y) || isEntity(x + 1, y))) {
+            if (!(isWall(x + 1, y) && __excludeWall))
+                result.insert(std::make_pair<emblem::Point, emblem::CellType>({ x + 1, y }, __excludeWall ? ENTITY : WALL));
         } else {
-            result.insert(std::make_pair<emblem::Point, emblem::CellType>({ x + 1, y }, EMPTY));
-            if (isEmpty(x + 1, y)) {
-                auto subResult = getAviablePaths(x + 1, y, maxStep - 1);
-                result.merge(subResult);
-            }
+            if (isIgnore(x + 1, y))
+                result.insert(std::make_pair<emblem::Point, emblem::CellType>({ x + 1, y }, IGNORE));
+            else
+                result.insert(std::make_pair<emblem::Point, emblem::CellType>({ x + 1, y }, EMPTY));
+            auto subResult = getAvailablePaths(x + 1, y, maxStep - 1);
+            result.merge(subResult);
         }
     }
 
     if (y > 0) {
-        if (isWall(x, y - 1) || isEntity(x, y - 1)) {
-            result.insert(std::make_pair<emblem::Point, emblem::CellType>({ x, y - 1 }, WALL));
+        if (!isIgnore(x, y - 1) && (isWall(x, y - 1) || isEntity(x, y - 1))) {
+            if (!(isWall(x, y - 1) && __excludeWall))
+                result.insert(std::make_pair<emblem::Point, emblem::CellType>({ x, y - 1 }, __excludeWall ? ENTITY : WALL));
         } else {
-            result.insert(std::make_pair<emblem::Point, emblem::CellType>({ x, y - 1 }, EMPTY));
-            if (isEmpty(x, y - 1)) {
-                auto subResult = getAviablePaths(x, y - 1, maxStep - 1);
-                result.merge(subResult);
-            }
+            if (isIgnore(x, y - 1))
+                result.insert(std::make_pair<emblem::Point, emblem::CellType>({ x, y - 1 }, IGNORE));
+            else
+                result.insert(std::make_pair<emblem::Point, emblem::CellType>({ x, y - 1 }, EMPTY));
+            auto subResult = getAvailablePaths(x, y - 1, maxStep - 1);
+            result.merge(subResult);
         }
     }
 
     if (y < __height - 1) {
-        if (isWall(x, y + 1) || isEntity(x, y + 1)) {
-            result.insert({{ x, y + 1 }, WALL});
+        if (!isIgnore(x, y + 1) && (isWall(x, y + 1) || isEntity(x, y + 1))) {
+            if (!(isWall(x, y + 1) && __excludeWall))
+                result.insert({{ x, y + 1 }, __excludeWall ? ENTITY : WALL});
         } else {
             result.insert({{ x, y + 1 }, EMPTY});
-            if (isEmpty(x, y + 1)) {
-                auto subResult = getAviablePaths(x, y + 1, maxStep - 1);
-                result.merge(subResult);
-            }
+            auto subResult = getAvailablePaths(x, y + 1, maxStep - 1);
+            result.merge(subResult);
         }
     }
     return result;
@@ -136,7 +159,7 @@ emblem::Path emblem::Map::findPath(const size_t &x, const size_t &y, const size_
         return result;
     }
 
-    emblem::Area aviablePaths = getAviablePaths(x, y, 1);
+    emblem::Area aviablePaths = getAvailablePaths(x, y, 1);
     for (auto &[pos, type] : aviablePaths) {
         if (pos.x == target_x && pos.y == target_y) {
             result.push_back(pos);
@@ -171,7 +194,7 @@ emblem::Path emblem::Map::findShortestPathTo(
         return result;
     }
 
-    emblem::Area aviablePaths = getAviablePaths(fromX, fromY, 1);
+    emblem::Area aviablePaths = getAvailablePaths(fromX, fromY, 1);
     for (auto &[pos, type] : aviablePaths) {
         if (pos.x == toX && pos.y == toY) {
             result.push_back(pos);

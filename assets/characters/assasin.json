@@ -1,5 +1,5 @@
 {
-    "texture": "map_assasin.png",
+    "texture": "assasin.png",
     "stats": {
         "hp": 250,
         "atk": 10,
